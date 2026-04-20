@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { AuthPageShell } from '../../components/auth/AuthPageShell'
 import { Button, Input, Select } from '../../components/ui'
-import { appRoutes, dashboardPathByRole } from '../../constants/routes'
+import { appRoutes, dashboardPathByRole, profilePathByRole } from '../../constants/routes'
 import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
 import { getErrorMessage } from '../../utils/errors'
@@ -48,7 +48,10 @@ export function SignupPage(): JSX.Element {
         description: `Welcome, ${response.user.name}.`,
         variant: 'success',
       })
-      navigate(dashboardPathByRole[response.user.role], { replace: true })
+      const destination = response.user.profileCompleted
+        ? dashboardPathByRole[response.user.role]
+        : profilePathByRole[response.user.role]
+      navigate(destination, { replace: true })
     } catch (error) {
       showToast({
         title: 'Signup failed',

@@ -5,7 +5,9 @@ import { useAuth } from '../hooks/useAuth'
 import { ProtectedRoute, PublicRoute, HomeRedirect } from '../components/routing'
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage'
 import { AdminAnalyticsPage } from '../pages/admin/AdminAnalyticsPage'
+import { AdminProfilePage } from '../pages/admin/AdminProfilePage'
 import { CandidateDashboardPage } from '../pages/candidate/CandidateDashboardPage'
+import { CandidateProfilePage } from '../pages/candidate/CandidateProfilePage'
 import { LoginPage } from '../pages/auth/LoginPage'
 import { SignupPage } from '../pages/auth/SignupPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
@@ -39,10 +41,12 @@ export function AppRoutes(): JSX.Element {
       <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
         <Route path={appRoutes.adminDashboard} element={<AdminDashboardPage />} />
         <Route path={appRoutes.adminAnalytics} element={<AdminAnalyticsPage />} />
+        <Route path={appRoutes.adminProfile} element={<AdminProfilePage />} />
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={['candidate']} />}>
         <Route path={appRoutes.userDashboard} element={<CandidateDashboardPage />} />
+        <Route path={appRoutes.userProfile} element={<CandidateProfilePage />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

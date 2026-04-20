@@ -44,6 +44,11 @@ const adminSidebarConfig: SidebarConfig = {
       to: `${appRoutes.adminDashboard}#reports`,
     },
     {
+      label: 'Company Profile',
+      icon: <Users className="h-4 w-4" />,
+      to: appRoutes.adminProfile,
+    },
+    {
       label: 'Analytics',
       icon: <BarChart2 className="h-4 w-4" />,
       to: appRoutes.adminAnalytics,
@@ -76,7 +81,7 @@ const candidateSidebarConfig: SidebarConfig = {
     {
       label: 'Profile',
       icon: <Users className="h-4 w-4" />,
-      to: `${appRoutes.userDashboard}#profile`,
+      to: appRoutes.userProfile,
     },
   ],
   secondary: [

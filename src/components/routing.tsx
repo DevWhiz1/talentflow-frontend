@@ -1,6 +1,6 @@
 import type { JSX } from 'react'
-import { Navigate, Outlet } from 'react-router-dom'
-import { appRoutes, dashboardPathByRole } from '../constants/routes'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { appRoutes, dashboardPathByRole, profilePathByRole } from '../constants/routes'
 import { useAuth } from '../hooks/useAuth'
 
 function RouteLoader(): JSX.Element {
@@ -18,6 +18,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ allowedRoles }: ProtectedRouteProps): JSX.Element {
+  const location = useLocation()
   const { dashboardPath, isAuthenticated, isHydrated, user } = useAuth()
 
   if (!isHydrated) {
@@ -32,29 +33,42 @@ export function ProtectedRoute({ allowedRoles }: ProtectedRouteProps): JSX.Eleme
     return <Navigate replace to={dashboardPathByRole[user.role] ?? dashboardPath} />
   }
 
+  const profilePath = profilePathByRole[user.role]
+  const isProfileRoute = location.pathname === profilePath
+
+  if (user.profileCompleted === false && !isProfileRoute) {
+    return <Navigate replace to={profilePath} />
+  }
+
   return <Outlet />
 }
 
 export function PublicRoute(): JSX.Element {
-  const { dashboardPath, isAuthenticated, isHydrated } = useAuth()
+  const { dashboardPath, isAuthenticated, isHydrated, user } = useAuth()
 
   if (!isHydrated) {
     return <RouteLoader />
   }
 
   if (isAuthenticated) {
-    return <Navigate replace to={dashboardPath} />
+    const destination = user && user.profileCompleted === false ? profilePathByRole[user.role] : dashboardPath
+    return <Navigate replace to={destination} />
   }
 
   return <Outlet />
 }
 
 export function HomeRedirect(): JSX.Element {
-  const { dashboardPath, isAuthenticated, isHydrated } = useAuth()
+  const { dashboardPath, isAuthenticated, isHydrated, user } = useAuth()
 
   if (!isHydrated) {
     return <RouteLoader />
   }
 
-  return <Navigate replace to={isAuthenticated ? dashboardPath : appRoutes.login} />
+  if (!isAuthenticated) {
+    return <Navigate replace to={appRoutes.login} />
+  }
+
+  const destination = user && user.profileCompleted === false ? profilePathByRole[user.role] : dashboardPath
+  return <Navigate replace to={destination} />
 }

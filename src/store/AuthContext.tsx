@@ -1,6 +1,6 @@
 import type { JSX, ReactNode } from 'react'
 import { createContext, useState } from 'react'
-import { dashboardPathByRole } from '../constants/routes'
+import { dashboardPathByRole, profilePathByRole } from '../constants/routes'
 import type { AuthResponse, AuthState, LoginPayload, SignupPayload, UserRole } from '../types/auth'
 import { login as loginRequest, signup as signupRequest } from '../services/authService'
 import { clearAuthSession, readAuthSession, writeAuthSession } from '../utils/authStorage'
@@ -12,7 +12,9 @@ interface AuthContextValue extends AuthState {
   signup: (payload: SignupPayload) => Promise<AuthResponse>
   logout: () => void
   setSession: (response: AuthResponse) => void
+  updateUser: (updater: AuthResponse['user']) => void
   dashboardPath: string
+  profilePath: string
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -22,6 +24,9 @@ const initialState: AuthState = readAuthSession()
 const getDashboardPath = (role: UserRole | null | undefined): string =>
   role ? dashboardPathByRole[role] : dashboardPathByRole.candidate
 
+const getProfilePath = (role: UserRole | null | undefined): string =>
+  role ? profilePathByRole[role] : profilePathByRole.candidate
+
 export function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
   const [state, setState] = useState<AuthState>(initialState)
   const isHydrated = true
@@ -29,6 +34,19 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
   const setSession = (response: AuthResponse): void => {
     setState(response)
     writeAuthSession(response)
+  }
+
+  const updateUser = (updater: AuthResponse['user']): void => {
+    if (!state.token) {
+      return
+    }
+
+    const nextState: AuthResponse = {
+      token: state.token,
+      user: updater,
+    }
+    setState(nextState)
+    writeAuthSession(nextState)
   }
 
   const login = async (payload: LoginPayload): Promise<AuthResponse> => {
@@ -56,7 +74,9 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     signup,
     logout,
     setSession,
+    updateUser,
     dashboardPath: getDashboardPath(state.user?.role),
+    profilePath: getProfilePath(state.user?.role),
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

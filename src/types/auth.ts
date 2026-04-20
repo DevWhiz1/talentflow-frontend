@@ -6,6 +6,29 @@ export interface AuthUser {
   email: string
   role: UserRole
   headline?: string
+  phone?: string
+  profileImage?: string
+  companyName?: string
+  companyWebsite?: string
+  companyAddress?: string
+  companyIndustry?: string
+  companySize?: string
+  hrDesignation?: string
+  hrDepartment?: string
+  companyDescription?: string
+  companyLogo?: string
+  linkedinUrl?: string
+  githubUrl?: string
+  portfolioUrl?: string
+  candidateHeadline?: string
+  bio?: string
+  skills?: string[]
+  currentLocation?: string
+  education?: string
+  experienceYears?: number
+  resumeUrl?: string
+  profileCompleted?: boolean
+  profileCompletion?: number
 }
 
 export interface MockAccount extends AuthUser {

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { readAuthToken } from '../utils/authStorage'
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL?.trim() || 'http://localhost:4000/api'
+const baseUrl = import.meta.env.VITE_API_BASE_URL?.trim() || 'http://localhost:8000/api/v1'
 
 export const api = axios.create({
   baseURL: baseUrl,
@@ -28,9 +28,27 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error: unknown) => {
-    const responseError = error as { response?: { data?: { message?: string }; status?: number }; message?: string }
+    const responseError = error as {
+      response?: {
+        data?: {
+          message?: string
+          detail?: string | Array<{ msg?: string }>
+        }
+        status?: number
+      }
+      message?: string
+    }
+
+    const detail = responseError.response?.data?.detail
+    const detailMessage = Array.isArray(detail)
+      ? detail
+          .map((entry) => entry?.msg)
+          .filter(Boolean)
+          .join(', ')
+      : detail
+
     const normalizedError = new Error(
-      responseError.response?.data?.message || responseError.message || 'Request failed',
+      responseError.response?.data?.message || detailMessage || responseError.message || 'Request failed',
     ) as Error & { status?: number }
 
     normalizedError.status = responseError.response?.status

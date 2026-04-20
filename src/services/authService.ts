@@ -1,31 +1,65 @@
 import type { AuthResponse, LoginPayload, SignupPayload } from '../types/auth'
-import { mockLogin, mockSignup } from '../utils/mockAuth'
+import { mapBackendProfileUser } from '../types/profile'
 import { api } from './api'
 
-const shouldUseMockApi = import.meta.env.VITE_USE_MOCK_API !== 'false'
+interface BackendAuthUser {
+  id: string | number
+  name: string
+  email: string
+  role: string
+  headline?: string
+  phone?: string
+  profile_image?: string
+  company_name?: string
+  company_website?: string
+  company_address?: string
+  company_industry?: string
+  company_size?: string
+  hr_designation?: string
+  hr_department?: string
+  company_description?: string
+  company_logo?: string
+  linkedin_url?: string
+  github_url?: string
+  portfolio_url?: string
+  candidate_headline?: string
+  bio?: string
+  skills?: string[]
+  current_location?: string
+  education?: string
+  experience_years?: number
+  resume_url?: string
+  profile_completed?: boolean
+  profile_completion?: number
+}
+
+interface BackendAuthResponse {
+  access_token: string
+  token_type: string
+  user: BackendAuthUser
+}
+
+const mapAuthResponse = (response: BackendAuthResponse): AuthResponse => ({
+  token: response.access_token,
+  user: mapBackendProfileUser(response.user),
+})
 
 export const login = async (payload: LoginPayload): Promise<AuthResponse> => {
-  try {
-    const { data } = await api.post<AuthResponse>('/auth/login', payload)
-    return data
-  } catch (error) {
-    if (shouldUseMockApi) {
-      return mockLogin(payload)
-    }
+  const { data } = await api.post<BackendAuthResponse>('/auth/login', {
+    email: payload.email,
+    password: payload.password,
+  })
 
-    throw error
-  }
+  return mapAuthResponse(data)
 }
 
 export const signup = async (payload: SignupPayload): Promise<AuthResponse> => {
-  try {
-    const { data } = await api.post<AuthResponse>('/auth/signup', payload)
-    return data
-  } catch (error) {
-    if (shouldUseMockApi) {
-      return mockSignup(payload)
-    }
+  const { data } = await api.post<BackendAuthResponse>('/auth/register', {
+    name: payload.name,
+    email: payload.email,
+    password: payload.password,
+    role: payload.role,
+  })
 
-    throw error
-  }
+  return mapAuthResponse(data)
 }
