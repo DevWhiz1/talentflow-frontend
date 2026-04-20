@@ -13,6 +13,7 @@ import {
 import type { UserRole } from '../../types/auth'
 import { appRoutes } from '../../constants/routes'
 import { classNames } from '../../utils/classNames'
+import talentflowLogo from '../../assets/talentflow-logo.png'
 
 interface SidebarChildLink {
   label: string
@@ -103,9 +104,7 @@ function getSidebarConfig(role: UserRole): SidebarConfig {
 export function BrandMark({ collapsed = false }: { collapsed?: boolean }): JSX.Element {
   return (
     <div className={classNames('flex items-center gap-3', collapsed ? 'justify-center' : '')}>
-      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-600 text-sm font-semibold text-white shadow-sm">
-        TF
-      </div>
+      <img src={talentflowLogo} alt="TalentFlow Logo" className="h-10 w-10" />
       {!collapsed && (
         <div>
           <p className="text-sm font-semibold text-slate-900">TalentFlow</p>

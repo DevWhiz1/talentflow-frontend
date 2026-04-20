@@ -76,9 +76,9 @@ export function AuthPageShell({
               </Link>
             </p>
 
-            <div className="mt-4 text-center text-xs text-slate-500">
+            {/* <div className="mt-4 text-center text-xs text-slate-500">
               Demo accounts: admin@talentflow.dev / Admin@123 and candidate@talentflow.dev / Candidate@123.
-            </div>
+            </div> */}
           </div>
         </section>
       </div>
