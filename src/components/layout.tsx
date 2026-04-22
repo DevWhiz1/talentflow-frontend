@@ -48,7 +48,6 @@ export function AppShell({ role, title, description, children }: AppShellProps):
       <div className="flex min-h-screen w-full">
         <Sidebar
           role={role}
-          userName={userName}
           currentPath={currentPath}
           collapsed={sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed((value) => !value)}
@@ -82,7 +81,6 @@ export function AppShell({ role, title, description, children }: AppShellProps):
 
       <MobileSidebar
         role={role}
-        userName={userName}
         currentPath={currentPath}
         open={mobileSidebarOpen}
         onClose={() => setMobileSidebarOpen(false)}

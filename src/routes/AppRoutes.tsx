@@ -6,6 +6,7 @@ import { ProtectedRoute, PublicRoute, HomeRedirect } from '../components/routing
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage'
 import { AdminAnalyticsPage } from '../pages/admin/AdminAnalyticsPage'
 import { AdminProfilePage } from '../pages/admin/AdminProfilePage'
+import { AdminJobCreatePage } from '../pages/admin/AdminJobCreatePage'
 import { CandidateDashboardPage } from '../pages/candidate/CandidateDashboardPage'
 import { CandidateProfilePage } from '../pages/candidate/CandidateProfilePage'
 import { LoginPage } from '../pages/auth/LoginPage'
@@ -42,6 +43,7 @@ export function AppRoutes(): JSX.Element {
         <Route path={appRoutes.adminDashboard} element={<AdminDashboardPage />} />
         <Route path={appRoutes.adminAnalytics} element={<AdminAnalyticsPage />} />
         <Route path={appRoutes.adminProfile} element={<AdminProfilePage />} />
+        <Route path={appRoutes.adminJobsNew} element={<AdminJobCreatePage />} />
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={['candidate']} />}>

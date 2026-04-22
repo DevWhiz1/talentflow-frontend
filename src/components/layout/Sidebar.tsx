@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
   BarChart2,
+  Briefcase,
   FileText,
   HelpCircle,
   LayoutDashboard,
@@ -43,6 +44,11 @@ const adminSidebarConfig: SidebarConfig = {
       label: 'Reports',
       icon: <FileText className="h-4 w-4" />,
       to: `${appRoutes.adminDashboard}#reports`,
+    },
+    {
+      label: 'Create Job',
+      icon: <Briefcase className="h-4 w-4" />,
+      to: appRoutes.adminJobsNew,
     },
     {
       label: 'Company Profile',
@@ -215,7 +221,6 @@ function SidebarSection({
 
 export interface SidebarProps {
   role: UserRole
-  userName: string
   currentPath: string
   collapsed: boolean
   onToggleCollapse: () => void
@@ -223,7 +228,6 @@ export interface SidebarProps {
 
 export function Sidebar({
   role,
-  userName,
   currentPath,
   collapsed,
   onToggleCollapse,
@@ -280,7 +284,6 @@ export function Sidebar({
 
 export interface MobileSidebarProps {
   role: UserRole
-  userName: string
   currentPath: string
   open: boolean
   onClose: () => void
@@ -288,7 +291,6 @@ export interface MobileSidebarProps {
 
 export function MobileSidebar({
   role,
-  userName,
   currentPath,
   open,
   onClose,

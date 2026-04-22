@@ -6,6 +6,7 @@ export const appRoutes = {
   adminDashboard: '/admin/dashboard',
   adminAnalytics: '/admin/analytics',
   adminProfile: '/admin/profile',
+  adminJobsNew: '/admin/jobs/new',
   userDashboard: '/user/dashboard',
   userProfile: '/user/profile',
 } as const
