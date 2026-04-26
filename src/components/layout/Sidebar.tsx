@@ -51,6 +51,11 @@ const adminSidebarConfig: SidebarConfig = {
       to: appRoutes.adminJobsNew,
     },
     {
+      label: 'HR Jobs',
+      icon: <FileText className="h-4 w-4" />,
+      to: appRoutes.adminHrJobs,
+    },
+    {
       label: 'Company Profile',
       icon: <Users className="h-4 w-4" />,
       to: appRoutes.adminProfile,

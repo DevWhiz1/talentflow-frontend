@@ -7,6 +7,9 @@ import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage'
 import { AdminAnalyticsPage } from '../pages/admin/AdminAnalyticsPage'
 import { AdminProfilePage } from '../pages/admin/AdminProfilePage'
 import { AdminJobCreatePage } from '../pages/admin/AdminJobCreatePage'
+import { AdminHrJobsPage } from '../pages/admin/AdminHrJobsPage'
+import { AdminHrJobDetailPage } from '../pages/admin/AdminHrJobDetailPage'
+import { AdminHrJobEditPage } from '../pages/admin/AdminHrJobEditPage'
 import { CandidateDashboardPage } from '../pages/candidate/CandidateDashboardPage'
 import { CandidateProfilePage } from '../pages/candidate/CandidateProfilePage'
 import { LoginPage } from '../pages/auth/LoginPage'
@@ -41,6 +44,9 @@ export function AppRoutes(): JSX.Element {
 
       <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
         <Route path={appRoutes.adminDashboard} element={<AdminDashboardPage />} />
+        <Route path={appRoutes.adminHrJobs} element={<AdminHrJobsPage />} />
+        <Route path={appRoutes.adminHrJobDetail} element={<AdminHrJobDetailPage />} />
+        <Route path={appRoutes.adminHrJobEdit} element={<AdminHrJobEditPage />} />
         <Route path={appRoutes.adminAnalytics} element={<AdminAnalyticsPage />} />
         <Route path={appRoutes.adminProfile} element={<AdminProfilePage />} />
         <Route path={appRoutes.adminJobsNew} element={<AdminJobCreatePage />} />
