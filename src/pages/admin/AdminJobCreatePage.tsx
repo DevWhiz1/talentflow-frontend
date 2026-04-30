@@ -218,7 +218,7 @@ export function AdminJobCreatePage(): JSX.Element {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">AI assistant</p>
             <h2 className="mt-2 text-xl font-semibold text-slate-900">Generate professional description</h2>
             <p className="mt-2 text-sm text-slate-600">
-              Describe what you need in plain language. OpenAI will convert it into a structured and professional job description.
+              Describe what you need in plain language. AI will convert it into a structured and professional job description.
             </p>
           </div>
 

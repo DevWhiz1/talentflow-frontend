@@ -2,12 +2,15 @@ import type { JSX } from 'react'
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Markdown from 'react-markdown'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Share2 } from 'lucide-react'
 import { AppShell } from '../../components/layout'
 import { Badge, Card } from '../../components/ui'
+import { appRoutes } from '../../constants/routes'
+import { useToast } from '../../hooks/useToast'
 import type { AdminHrJobDetail } from '../../services/jobService'
 import { getAdminHrJobById } from '../../services/jobService'
 import { getErrorMessage } from '../../utils/errors'
+import { slugify } from '../../utils/slug'
 
 function formatDate(value?: string | null): string {
   if (!value) {
@@ -31,6 +34,33 @@ function formatLabel(value?: string | null): string {
     .split('_')
     .join(' ')
     .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
+function buildPublicJobPath(companyName: string | null | undefined, jobId: number): string {
+  const companySlug = slugify(companyName || 'company')
+  return appRoutes.publicJobDetail.replace(':companySlug', companySlug).replace(':jobId', String(jobId))
+}
+
+async function copyToClipboard(value: string): Promise<boolean> {
+  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value)
+    return true
+  }
+
+  if (typeof document === 'undefined') {
+    return false
+  }
+
+  const temp = document.createElement('textarea')
+  temp.value = value
+  temp.style.position = 'fixed'
+  temp.style.left = '-9999px'
+  document.body.appendChild(temp)
+  temp.focus()
+  temp.select()
+  const ok = document.execCommand('copy')
+  document.body.removeChild(temp)
+  return ok
 }
 
 function DetailItem({ label, value }: { label: string; value: string }): JSX.Element {
@@ -75,6 +105,7 @@ function MarkdownSection({ title, content }: { title: string; content?: string }
 export function AdminHrJobDetailPage(): JSX.Element {
   const { jobId } = useParams<{ jobId: string }>()
   const navigate = useNavigate()
+  const { showToast } = useToast()
   const [job, setJob] = useState<AdminHrJobDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -107,6 +138,34 @@ export function AdminHrJobDetailPage(): JSX.Element {
 
     void loadJobDetail()
   }, [jobId])
+
+  const handleSharePublicLink = async (): Promise<void> => {
+    if (!job) {
+      return
+    }
+
+    try {
+      const path = buildPublicJobPath(job.company_name, job.id)
+      const publicUrl = `${window.location.origin}${path}`
+      const copied = await copyToClipboard(publicUrl)
+
+      if (!copied) {
+        throw new Error('Copy not supported')
+      }
+
+      showToast({
+        title: 'Public job link copied',
+        description: publicUrl,
+        variant: 'success',
+      })
+    } catch {
+      showToast({
+        title: 'Could not copy link',
+        description: 'Please copy the URL from the browser address bar instead.',
+        variant: 'error',
+      })
+    }
+  }
 
   if (isLoading) {
     return (
@@ -160,8 +219,17 @@ export function AdminHrJobDetailPage(): JSX.Element {
               <h1 className="text-3xl font-bold text-slate-900">{job.title}</h1>
             </div>
             <button
+              onClick={() => {
+                void handleSharePublicLink()
+              }}
+              className="inline-flex items-center gap-2 rounded-lg border border-black bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-slate-100"
+            >
+              <Share2 className="h-4 w-4" />
+              Share Public Link
+            </button>
+            <button
               onClick={() => navigate(`/admin/hr/${job.id}/edit`)}
-              className="rounded-lg border border-slate-900 bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+              className="rounded-lg border border-black bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
             >
               Edit Job
             </button>

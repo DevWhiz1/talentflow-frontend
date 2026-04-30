@@ -18,10 +18,10 @@ export function Button({
   ...props
 }: ButtonProps): JSX.Element {
   const variantClasses: Record<ButtonVariant, string> = {
-    primary: 'bg-teal-600 text-white shadow-sm shadow-teal-100 hover:bg-teal-700',
-    secondary: 'border border-slate-200 bg-white text-slate-900 hover:bg-slate-50',
-    ghost: 'text-slate-700 hover:bg-slate-100',
-    danger: 'bg-rose-600 text-white hover:bg-rose-700',
+    primary: 'bg-black text-white shadow-sm shadow-slate-200 hover:bg-slate-800',
+    secondary: 'border border-black bg-white text-black hover:bg-slate-100',
+    ghost: 'text-black hover:bg-slate-100',
+    danger: 'bg-black text-white hover:bg-slate-800',
   }
 
   const sizeClasses: Record<ButtonSize, string> = {
@@ -34,7 +34,7 @@ export function Button({
     <button
       type={type}
       className={classNames(
-        'inline-flex items-center justify-center rounded-xl font-medium transition focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
+        'inline-flex items-center justify-center rounded-xl font-medium transition focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
         variantClasses[variant],
         sizeClasses[size],
         className,

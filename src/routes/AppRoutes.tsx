@@ -12,6 +12,11 @@ import { AdminHrJobDetailPage } from '../pages/admin/AdminHrJobDetailPage'
 import { AdminHrJobEditPage } from '../pages/admin/AdminHrJobEditPage'
 import { CandidateDashboardPage } from '../pages/candidate/CandidateDashboardPage'
 import { CandidateProfilePage } from '../pages/candidate/CandidateProfilePage'
+import { CandidateCompanyJobsPage } from '../pages/candidate/CandidateCompanyJobsPage'
+import { CandidateJobDetailPage } from '../pages/candidate/CandidateJobDetailPage'
+import { CandidateJobApplyPage } from '../pages/candidate/CandidateJobApplyPage'
+import { PublicCompanyJobsPage } from '../pages/public/PublicCompanyJobsPage'
+import { PublicJobDetailPage } from '../pages/public/PublicJobDetailPage'
 import { LoginPage } from '../pages/auth/LoginPage'
 import { SignupPage } from '../pages/auth/SignupPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
@@ -37,6 +42,9 @@ export function AppRoutes(): JSX.Element {
     <Routes>
       <Route path="/" element={<RootRedirect />} />
 
+      <Route path={appRoutes.publicCompanyJobs} element={<PublicCompanyJobsPage />} />
+      <Route path={appRoutes.publicJobDetail} element={<PublicJobDetailPage />} />
+
       <Route element={<PublicRoute />}>
         <Route path={appRoutes.login} element={<LoginPage />} />
         <Route path={appRoutes.signup} element={<SignupPage />} />
@@ -55,6 +63,10 @@ export function AppRoutes(): JSX.Element {
       <Route element={<ProtectedRoute allowedRoles={['candidate']} />}>
         <Route path={appRoutes.userDashboard} element={<CandidateDashboardPage />} />
         <Route path={appRoutes.userProfile} element={<CandidateProfilePage />} />
+        <Route path={appRoutes.candidateJobs} element={<CandidateCompanyJobsPage />} />
+        <Route path={appRoutes.candidateCompanyJobs} element={<CandidateCompanyJobsPage />} />
+        <Route path={appRoutes.candidateJobDetail} element={<CandidateJobDetailPage />} />
+        <Route path={appRoutes.candidateJobApply} element={<CandidateJobApplyPage />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

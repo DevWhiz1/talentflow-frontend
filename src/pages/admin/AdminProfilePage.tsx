@@ -107,7 +107,7 @@ export function AdminProfilePage(): JSX.Element {
       updateUser(updatedUser)
       showToast({
         title: 'Photo uploaded',
-        description: 'Profile image uploaded to Cloudinary.',
+        description: 'Profile image uploaded.',
         variant: 'success',
       })
     } catch (error) {
