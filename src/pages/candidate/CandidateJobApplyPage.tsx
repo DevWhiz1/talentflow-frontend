@@ -4,11 +4,11 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { z } from 'zod'
-import { ArrowLeft, FileText, Plus, Trash2, UploadCloud, Sparkles } from 'lucide-react'
+import { ArrowLeft, FileText, Plus, Trash2, UploadCloud, Download } from 'lucide-react'
 import { AppShell } from '../../components/layout'
 import { Badge, Button, Card, Input, SectionHeader } from '../../components/ui'
 import { useToast } from '../../hooks/useToast'
-import { getJobOpeningById, submitJobApplication, uploadApplicationDocument } from '../../services/jobService'
+import { getJobOpeningById, getMyJobApplications, submitJobApplication, uploadApplicationDocument } from '../../services/jobService'
 import { parseResume } from '../../services/resumeService'
 import type { CandidateJobOpening, JobApplicationSubmitPayload } from '../../types/jobApplication'
 import { getErrorMessage } from '../../utils/errors'
@@ -21,19 +21,15 @@ const educationSchema = z.object({
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   description: z.string().optional(),
-  gpa: z.string().optional(),
 })
 
 const experienceSchema = z.object({
   title: z.string().optional(),
   company: z.string().optional(),
-  industry: z.string().optional(),
   summary: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   isCurrent: z.boolean().optional(),
-  employmentType: z.string().optional(),
-  location: z.string().optional(),
 })
 
 const applicationSchema = z.object({
@@ -42,7 +38,8 @@ const applicationSchema = z.object({
   email: z.string().email('Enter a valid email address'),
   headline: z.string().optional(),
   phone: z.string().min(8, 'Phone number is required'),
-  address: z.string().min(5, 'Address is required'),
+  city: z.string().min(2, 'City is required'),
+  country: z.string().min(2, 'Country is required'),
   portfolioUrl: z.string().optional(),
   linkedinUrl: z.string().optional(),
   githubUrl: z.string().optional(),
@@ -64,19 +61,15 @@ const initialEducation = {
   startDate: '',
   endDate: '',
   description: '',
-  gpa: '',
 }
 
 const initialExperience = {
   title: '',
   company: '',
-  industry: '',
   summary: '',
   startDate: '',
   endDate: '',
   isCurrent: false,
-  employmentType: '',
-  location: '',
 }
 
 function monthValueToIso(value?: string): string | undefined {
@@ -89,21 +82,29 @@ function monthValueToIso(value?: string): string | undefined {
     return undefined
   }
 
-  const monthYearMatch = cleaned.match(/^(\d{2})\/(\d{4})$/)
+  // Handle MM/YYYY format (01/2023)
+  const monthYearMatch = cleaned.match(/^(\d{1,2})\/(\d{4})$/)
   if (monthYearMatch) {
     const [, month, year] = monthYearMatch
-    return `${year}-${month}-01T00:00:00`
+    const paddedMonth = month.padStart(2, '0')
+    return `${year}-${paddedMonth}-01`
   }
 
-  const isoMonthMatch = cleaned.match(/^(\d{4})-(\d{2})$/)
+  // Handle YYYY-MM format (2023-01)
+  const isoMonthMatch = cleaned.match(/^(\d{4})-(\d{1,2})$/)
   if (isoMonthMatch) {
     const [, year, month] = isoMonthMatch
-    return `${year}-${month}-01T00:00:00`
+    const paddedMonth = month.padStart(2, '0')
+    return `${year}-${paddedMonth}-01`
   }
 
-  const dateMatch = cleaned.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  // Handle full ISO date (2023-01-15)
+  const dateMatch = cleaned.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)
   if (dateMatch) {
-    return `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}T00:00:00`
+    const [, year, month, day] = dateMatch
+    const paddedMonth = month.padStart(2, '0')
+    const paddedDay = day.padStart(2, '0')
+    return `${year}-${paddedMonth}-${paddedDay}`
   }
 
   return undefined
@@ -115,6 +116,24 @@ function formatUploadedName(fileName?: string | null): string {
   }
 
   return fileName
+}
+
+function splitDateRange(value?: string): { startDate: string; endDate: string } {
+  if (!value) {
+    return { startDate: '', endDate: '' }
+  }
+
+  const cleaned = value.trim()
+  if (!cleaned) {
+    return { startDate: '', endDate: '' }
+  }
+
+  const parts = cleaned.split(/\s*[-–to]+\s*/i).map((part) => part.trim()).filter(Boolean)
+  if (parts.length >= 2) {
+    return { startDate: parts[0], endDate: parts[1] }
+  }
+
+  return { startDate: cleaned, endDate: '' }
 }
 
 function DocumentDropzone({
@@ -210,6 +229,9 @@ export function CandidateJobApplyPage(): JSX.Element {
   const [resumeFileName, setResumeFileName] = useState<string | null>(null)
   const [resumeUploading, setResumeUploading] = useState(false)
   const [isAutofilling, setIsAutofilling] = useState(false)
+  const [autofillStep, setAutofillStep] = useState(0)
+  const [hasApplied, setHasApplied] = useState(false)
+  const [existingApplicationStatus, setExistingApplicationStatus] = useState<string>('')
 
   const defaultValues = useMemo<ApplicationFormValues>(
     () => ({
@@ -218,7 +240,8 @@ export function CandidateJobApplyPage(): JSX.Element {
       email: '',
       headline: '',
       phone: '',
-      address: '',
+      city: '',
+      country: '',
       portfolioUrl: '',
       linkedinUrl: '',
       githubUrl: '',
@@ -267,8 +290,17 @@ export function CandidateJobApplyPage(): JSX.Element {
       setError(null)
 
       try {
-        const response = await getJobOpeningById(Number(jobId))
+        const normalizedJobId = Number(jobId)
+        const [response, myApplications] = await Promise.all([
+          getJobOpeningById(normalizedJobId),
+          getMyJobApplications(),
+        ])
+
+        const existingApplication = myApplications.find((application) => application.job_id === normalizedJobId)
+
         setJob(response)
+        setHasApplied(Boolean(existingApplication))
+        setExistingApplicationStatus(existingApplication?.status ?? '')
         reset({
           ...defaultValues,
           email: '',
@@ -314,66 +346,94 @@ export function CandidateJobApplyPage(): JSX.Element {
   const handleAutofillFromResume = async (file: File): Promise<void> => {
     try {
       setIsAutofilling(true)
+      setAutofillStep(1)
       const parsedData = await parseResume(file)
+      setAutofillStep(2)
 
+      // Import flow should also store the resume as uploaded for submission.
+      if (parsedData.resume_url) {
+        setValue('resumeUrl', parsedData.resume_url, { shouldValidate: true })
+      }
+      setResumeFileName(file.name)
+
+      // Extract and set personal information
       if (parsedData.full_name) {
-        const nameParts = parsedData.full_name.split(' ')
+        const nameParts = parsedData.full_name.trim().split(/\s+/)
         setValue('firstName', nameParts[0] || '', { shouldValidate: true })
         setValue('lastName', nameParts.slice(1).join(' ') || '', { shouldValidate: true })
       }
 
-      if (parsedData.email) setValue('email', parsedData.email, { shouldValidate: true })
-      if (parsedData.phone) setValue('phone', parsedData.phone, { shouldValidate: true })
-      if (parsedData.linkedin) setValue('linkedinUrl', parsedData.linkedin, { shouldValidate: true })
-      if (parsedData.github) setValue('githubUrl', parsedData.github, { shouldValidate: true })
-      if (parsedData.portfolio) setValue('portfolioUrl', parsedData.portfolio, { shouldValidate: true })
+      if (parsedData.email) setValue('email', parsedData.email.trim(), { shouldValidate: true })
+      if (parsedData.phone) setValue('phone', parsedData.phone.trim(), { shouldValidate: true })
+      if (parsedData.location) {
+        const location = parsedData.location.trim()
 
-      if (parsedData.education?.length) {
+        const locationParts = location.split(',').map((part) => part.trim()).filter(Boolean)
+        if (locationParts.length >= 2) {
+          setValue('city', locationParts[0], { shouldValidate: true })
+          setValue('country', locationParts[locationParts.length - 1], { shouldValidate: true })
+        } else if (locationParts.length === 1) {
+          setValue('city', locationParts[0], { shouldValidate: true })
+        }
+      }
+      if (parsedData.linkedin) setValue('linkedinUrl', parsedData.linkedin.trim(), { shouldValidate: true })
+      if (parsedData.github) setValue('githubUrl', parsedData.github.trim(), { shouldValidate: true })
+      if (parsedData.portfolio) setValue('portfolioUrl', parsedData.portfolio.trim(), { shouldValidate: true })
+      if (parsedData.summary) setValue('headline', parsedData.summary.trim(), { shouldValidate: true })
+      setAutofillStep(3)
+
+      // Clear existing education/experience before adding new ones
+      educationFields.forEach((_, index) => removeEducation(index))
+      experienceFields.forEach((_, index) => removeExperience(index))
+
+      // Add education entries
+      if (parsedData.education?.length > 0) {
         parsedData.education
-          .filter((edu) => edu.degree || edu.institution)
+          .filter((edu) => edu.degree?.trim() || edu.institution?.trim())
           .forEach((edu) => {
+            const fallbackRange = splitDateRange(edu.year)
             appendEducation({
-              school: edu.institution || '',
-              degree: edu.degree || '',
-              startDate: '',
-              endDate: edu.year || '',
+              school: edu.institution?.trim() || '',
+              degree: edu.degree?.trim() || '',
               fieldOfStudy: '',
+              startDate: edu.start_date?.trim() || fallbackRange.startDate,
+              endDate: edu.end_date?.trim() || fallbackRange.endDate,
               description: '',
-              gpa: '',
             })
           })
       }
 
-      if (parsedData.experience?.length) {
+      // Add experience entries
+      if (parsedData.experience?.length > 0) {
         parsedData.experience
-          .filter((exp) => exp.job_title || exp.company)
+          .filter((exp) => exp.job_title?.trim() || exp.company?.trim())
           .forEach((exp) => {
             appendExperience({
-              title: exp.job_title || '',
-              company: exp.company || '',
-              summary: exp.description || '',
-              startDate: '',
-              endDate: '',
-              isCurrent: !exp.end_date,
-              employmentType: '',
-              industry: '',
-              location: '',
+              title: exp.job_title?.trim() || '',
+              company: exp.company?.trim() || '',
+              summary: exp.description?.trim() || '',
+              startDate: exp.start_date?.trim() || '',
+              endDate: exp.end_date?.trim() && exp.end_date.toLowerCase() !== 'present' ? exp.end_date.trim() : '',
+              isCurrent: !exp.end_date || exp.end_date.toLowerCase() === 'present' || exp.end_date.toLowerCase() === 'current',
             })
           })
       }
 
+      setAutofillStep(4)
+
       showToast({
-        title: 'Resume parsed successfully',
-        description: 'Your resume information has been auto-filled into the form.',
+        title: 'Resume imported successfully',
+        description: 'Your resume information has been auto-filled. Please review and adjust as needed.',
         variant: 'success',
       })
     } catch (autofillError) {
       showToast({
-        title: 'Autofill failed',
-        description: getErrorMessage(autofillError, 'Unable to parse your resume.'),
+        title: 'Import failed',
+        description: getErrorMessage(autofillError, 'Unable to parse your resume. Please fill the form manually.'),
         variant: 'error',
       })
     } finally {
+      setAutofillStep(0)
       setIsAutofilling(false)
     }
   }
@@ -383,19 +443,29 @@ export function CandidateJobApplyPage(): JSX.Element {
       return
     }
 
+    if (hasApplied) {
+      showToast({
+        title: 'Already applied',
+        description: 'You have already applied for this job.',
+        variant: 'error',
+      })
+      return
+    }
+
     const payload: JobApplicationSubmitPayload = {
       job_id: job.id,
-      first_name: values.firstName,
-      last_name: values.lastName,
-      email: values.email,
-      phone: values.phone,
-      address: values.address,
-      headline: values.headline || undefined,
+      first_name: values.firstName.trim(),
+      last_name: values.lastName.trim(),
+      email: values.email.trim(),
+      phone: values.phone.trim(),
+      city: values.city.trim(),
+      country: values.country.trim(),
+      headline: values.headline?.trim() || undefined,
       resume_url: values.resumeUrl,
-      cover_letter: values.coverLetter || undefined,
-      portfolio_url: values.portfolioUrl || undefined,
-      linkedin_url: values.linkedinUrl || undefined,
-      github_url: values.githubUrl || undefined,
+      cover_letter: values.coverLetter?.trim() || undefined,
+      portfolio_url: values.portfolioUrl?.trim() || undefined,
+      linkedin_url: values.linkedinUrl?.trim() || undefined,
+      github_url: values.githubUrl?.trim() || undefined,
       education: values.education
         .filter((entry) => entry.school?.trim())
         .map((entry) => ({
@@ -405,20 +475,16 @@ export function CandidateJobApplyPage(): JSX.Element {
           start_date: monthValueToIso(entry.startDate),
           end_date: monthValueToIso(entry.endDate),
           description: entry.description?.trim() || undefined,
-          gpa: entry.gpa ? Number(entry.gpa) : undefined,
         })),
       experience: values.experience
         .filter((entry) => entry.title?.trim())
         .map((entry) => ({
           title: entry.title?.trim() ?? '',
           company: entry.company?.trim() || undefined,
-          industry: entry.industry?.trim() || undefined,
           description: entry.summary?.trim() || undefined,
           start_date: monthValueToIso(entry.startDate),
           end_date: entry.isCurrent ? undefined : monthValueToIso(entry.endDate),
           is_currently_working: Boolean(entry.isCurrent),
-          employment_type: entry.employmentType?.trim() || undefined,
-          location: entry.location?.trim() || undefined,
         })),
     }
 
@@ -477,6 +543,43 @@ export function CandidateJobApplyPage(): JSX.Element {
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 Share the information below. Upload your resume and cover letter to create the application record.
               </p>
+              {hasApplied ? (
+                <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                  You have already applied for this job{existingApplicationStatus ? ` (status: ${existingApplicationStatus})` : ''}.
+                </div>
+              ) : null}
+            </Card>
+
+            <Card className="rounded-2xl border border-teal-200 bg-teal-50 p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="font-semibold text-slate-900">Quick apply with your resume</h3>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Import your resume to auto-fill your information. Review and adjust as needed before submitting.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="primary"
+                  disabled={isAutofilling}
+                  onClick={() => {
+                    const input = document.createElement('input')
+                    input.type = 'file'
+                    input.accept = '.pdf,.docx,.doc'
+                    input.onchange = () => {
+                      const selectedFile = input.files?.[0]
+                      if (selectedFile) {
+                        void handleAutofillFromResume(selectedFile)
+                      }
+                    }
+                    input.click()
+                  }}
+                  className="whitespace-nowrap"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  {isAutofilling ? 'Importing...' : 'Import resume'}
+                </Button>
+              </div>
             </Card>
 
             <Card className="p-6">
@@ -492,8 +595,9 @@ export function CandidateJobApplyPage(): JSX.Element {
                     <Input label="Last name" required error={errors.lastName?.message} {...register('lastName')} />
                     <Input label="Email" required error={errors.email?.message} {...register('email')} />
                     <Input label="Phone" required error={errors.phone?.message} {...register('phone')} />
+                    <Input label="City" required error={errors.city?.message} {...register('city')} />
+                    <Input label="Country" required error={errors.country?.message} {...register('country')} />
                     <Input label="Headline" className="sm:col-span-2" error={errors.headline?.message} {...register('headline')} />
-                    <Input label="Address" className="sm:col-span-2" required error={errors.address?.message} {...register('address')} />
                   </div>
                 </SectionWrapper>
 
@@ -513,26 +617,6 @@ export function CandidateJobApplyPage(): JSX.Element {
                       void handleUpload(file)
                     }}
                   />
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      disabled={resumeUploading || isAutofilling}
-                      onClick={() => {
-                        const input = document.createElement('input')
-                        input.type = 'file'
-                        input.accept = '.pdf,.docx'
-                        input.onchange = () => {
-                          const selectedFile = input.files?.[0]
-                          if (selectedFile) {
-                            void handleAutofillFromResume(selectedFile)
-                          }
-                        }
-                        input.click()
-                      }}
-                    >
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Autofill from Resume
-                    </Button>
 
                   <input type="hidden" {...register('resumeUrl')} />
 
@@ -560,6 +644,7 @@ export function CandidateJobApplyPage(): JSX.Element {
                     <Button
                       type="button"
                       variant="secondary"
+                      className="whitespace-nowrap"
                       onClick={() => appendEducation({ ...initialEducation })}
                     >
                       <Plus className="mr-2 h-4 w-4" />
@@ -573,7 +658,7 @@ export function CandidateJobApplyPage(): JSX.Element {
                   ) : null}
                   <div className="space-y-4">
                     {educationFields.map((field, index) => (
-                      <Card key={field.id} className="p-5">
+                      <Card key={field.id} className="p-4">
                         <div className="flex items-center justify-between gap-4">
                           <p className="font-medium text-slate-900">Education #{index + 1}</p>
                           <Button type="button" variant="ghost" onClick={() => removeEducation(index)}>
@@ -581,17 +666,16 @@ export function CandidateJobApplyPage(): JSX.Element {
                             Remove
                           </Button>
                         </div>
-                        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                        <div className="mt-3 grid gap-3 sm:grid-cols-3">
                           <Input label="School" required {...register(`education.${index}.school`)} />
                           <Input label="Field of study" {...register(`education.${index}.fieldOfStudy`)} />
                           <Input label="Degree" {...register(`education.${index}.degree`)} />
-                          <Input label="GPA" {...register(`education.${index}.gpa`)} />
                           <Input label="Start date (MM/YYYY)" placeholder="MM/YYYY" {...register(`education.${index}.startDate`)} />
                           <Input label="End date (MM/YYYY)" placeholder="MM/YYYY" {...register(`education.${index}.endDate`)} />
-                          <label className="sm:col-span-2 block">
+                          <label className="sm:col-span-3 block">
                             <span className="mb-2 block text-sm font-medium text-slate-700">Description</span>
                             <textarea
-                              rows={3}
+                              rows={2}
                               className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10"
                               placeholder="Relevant coursework, honors, or project notes."
                               {...register(`education.${index}.description`)}
@@ -613,6 +697,7 @@ export function CandidateJobApplyPage(): JSX.Element {
                     <Button
                       type="button"
                       variant="secondary"
+                      className="whitespace-nowrap"
                       onClick={() => appendExperience({ ...initialExperience })}
                     >
                       <Plus className="mr-2 h-4 w-4" />
@@ -626,7 +711,7 @@ export function CandidateJobApplyPage(): JSX.Element {
                   ) : null}
                   <div className="space-y-4">
                     {experienceFields.map((field, index) => (
-                      <Card key={field.id} className="p-5">
+                      <Card key={field.id} className="p-4">
                         <div className="flex items-center justify-between gap-4">
                           <p className="font-medium text-slate-900">Experience #{index + 1}</p>
                           <Button type="button" variant="ghost" onClick={() => removeExperience(index)}>
@@ -634,22 +719,19 @@ export function CandidateJobApplyPage(): JSX.Element {
                             Remove
                           </Button>
                         </div>
-                        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                        <div className="mt-3 grid gap-3 sm:grid-cols-3">
                           <Input label="Title" required {...register(`experience.${index}.title`)} />
                           <Input label="Company" {...register(`experience.${index}.company`)} />
-                          <Input label="Industry" {...register(`experience.${index}.industry`)} />
-                          <Input label="Employment type" {...register(`experience.${index}.employmentType`)} />
-                          <Input label="Location" {...register(`experience.${index}.location`)} />
                           <Input label="Start date (MM/YYYY)" placeholder="MM/YYYY" {...register(`experience.${index}.startDate`)} />
                           <Input label="End date (MM/YYYY)" placeholder="MM/YYYY" {...register(`experience.${index}.endDate`)} />
-                          <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 sm:col-span-2">
+                          <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 sm:col-span-3">
                             <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-teal-600" {...register(`experience.${index}.isCurrent`)} />
                             I currently work here
                           </label>
-                          <label className="sm:col-span-2 block">
+                          <label className="sm:col-span-3 block">
                             <span className="mb-2 block text-sm font-medium text-slate-700">Summary</span>
                             <textarea
-                              rows={3}
+                              rows={2}
                               className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10"
                               placeholder="Describe your responsibilities, achievements, and impact."
                               {...register(`experience.${index}.summary`)}
@@ -675,8 +757,8 @@ export function CandidateJobApplyPage(): JSX.Element {
                 </SectionWrapper>
 
                 <div className="flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row">
-                  <Button type="submit" className="sm:flex-1">
-                    {isSubmitting ? 'Submitting application...' : 'Submit application'}
+                  <Button type="submit" className="sm:flex-1" disabled={hasApplied || isSubmitting}>
+                    {hasApplied ? 'Already applied' : isSubmitting ? 'Submitting application...' : 'Submit application'}
                   </Button>
                   <Button type="button" variant="secondary" className="sm:flex-1" onClick={() => navigate(detailPath)}>
                     Cancel
@@ -687,20 +769,6 @@ export function CandidateJobApplyPage(): JSX.Element {
           </div>
 
           <div className="space-y-6">
-            <Card className="p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Role summary</p>
-              <h3 className="mt-2 text-xl font-semibold text-slate-900">{job.title}</h3>
-              <div className="mt-4 space-y-3 text-sm text-slate-600">
-                <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3">
-                  <span>Company</span>
-                  <span className="font-medium text-slate-900">{job.company_name || 'Company'}</span>
-                </div>
-                <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3">
-                  <span>Location</span>
-                  <span className="font-medium text-slate-900">{job.location || 'Remote'}</span>
-                </div>
-              </div>
-            </Card>
 
             <Card className="p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Application checklist</p>
@@ -742,6 +810,47 @@ export function CandidateJobApplyPage(): JSX.Element {
           </div>
         </div>
       )}
+
+      {isAutofilling ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4">
+          <div className="w-full max-w-xl rounded-2xl bg-white p-6 sm:p-8 shadow-2xl">
+            <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-orange-200 via-fuchsia-200 to-indigo-300">
+              <FileText className="h-10 w-10 text-indigo-700" />
+            </div>
+            <h3 className="text-center text-3xl font-semibold text-slate-800">Processing your resume</h3>
+
+            <div className="mx-auto mt-6 h-2 w-full max-w-md overflow-hidden rounded-full bg-violet-100">
+              <div
+                className="h-full rounded-full bg-violet-700 transition-all duration-300"
+                style={{ width: `${autofillStep === 1 ? 23 : autofillStep === 2 ? 48 : autofillStep === 3 ? 76 : 100}%` }}
+              />
+            </div>
+
+            <p className="mt-3 text-center text-3xl font-semibold text-violet-700">
+              {autofillStep === 1 ? '23%' : autofillStep === 2 ? '48%' : autofillStep === 3 ? '76%' : '100%'} completed
+            </p>
+
+            <ul className="mx-auto mt-8 max-w-sm space-y-4 text-lg text-slate-600">
+              <li className="flex items-center gap-3">
+                <span className={`h-3 w-3 rounded-full ${autofillStep >= 1 ? 'bg-violet-700 ring-4 ring-violet-200' : 'bg-violet-200'}`} />
+                Reading your resume
+              </li>
+              <li className="flex items-center gap-3">
+                <span className={`h-3 w-3 rounded-full ${autofillStep >= 2 ? 'bg-violet-700 ring-4 ring-violet-200' : 'bg-violet-200'}`} />
+                Filling in your contact details
+              </li>
+              <li className="flex items-center gap-3">
+                <span className={`h-3 w-3 rounded-full ${autofillStep >= 3 ? 'bg-violet-700 ring-4 ring-violet-200' : 'bg-violet-200'}`} />
+                Adding your experience and education
+              </li>
+              <li className="flex items-center gap-3">
+                <span className={`h-3 w-3 rounded-full ${autofillStep >= 4 ? 'bg-violet-700 ring-4 ring-violet-200' : 'bg-violet-200'}`} />
+                Finishing up
+              </li>
+            </ul>
+          </div>
+        </div>
+      ) : null}
     </AppShell>
   )
 }

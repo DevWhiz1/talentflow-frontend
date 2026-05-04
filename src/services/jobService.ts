@@ -134,6 +134,21 @@ export interface AdminHrJobDetail {
   creator_email?: string | null
 }
 
+export interface CandidateApplicationListItem {
+  id: number
+  job_id: number
+  candidate_id: number
+  first_name: string
+  last_name: string
+  email: string
+  current_job_title?: string | null
+  status: string
+  application_rating?: number | null
+  applied_at: string
+  is_viewed: boolean
+  is_flagged: boolean
+}
+
 export const createJob = async (payload: CreateJobPayload) => {
   const { data } = await api.post('/jobs/', payload)
   return data
@@ -268,5 +283,10 @@ export const submitJobApplication = async (
   payload: JobApplicationSubmitPayload,
 ): Promise<Record<string, unknown>> => {
   const { data } = await api.post<Record<string, unknown>>('/job-applications/apply', payload)
+  return data
+}
+
+export const getMyJobApplications = async (): Promise<CandidateApplicationListItem[]> => {
+  const { data } = await api.get<CandidateApplicationListItem[]>('/job-applications/my-applications')
   return data
 }

@@ -13,7 +13,9 @@ export interface ParsedResumeData {
   education: Array<{
     degree: string
     institution: string
-    year: string
+    start_date: string
+    end_date: string
+    year?: string
   }>
   experience: Array<{
     job_title: string
@@ -22,6 +24,8 @@ export interface ParsedResumeData {
     end_date: string
     description: string
   }>
+  resume_url?: string
+  profile_updated?: boolean
 }
 
 export const parseResume = async (file: File): Promise<ParsedResumeData> => {

@@ -65,6 +65,8 @@ export interface JobApplicationSubmitPayload {
   email: string
   phone: string
   address: string
+  city: string
+  country: string
   headline?: string
   resume_url: string
   cover_letter?: string
