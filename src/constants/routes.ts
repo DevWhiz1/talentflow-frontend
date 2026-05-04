@@ -3,6 +3,8 @@ import type { UserRole } from '../types/auth'
 export const appRoutes = {
   login: '/login',
   signup: '/signup',
+  publicCompanyJobs: '/jobs/:companySlug',
+  publicJobDetail: '/jobs/:companySlug/j/:jobId',
   adminDashboard: '/admin/dashboard',
   adminHrJobs: '/admin/hr',
   adminHrJobDetail: '/admin/hr/:jobId',
@@ -12,6 +14,10 @@ export const appRoutes = {
   adminJobsNew: '/admin/jobs/new',
   userDashboard: '/user/dashboard',
   userProfile: '/user/profile',
+  candidateJobs: '/user/jobs',
+  candidateCompanyJobs: '/user/jobs/:companySlug',
+  candidateJobDetail: '/user/jobs/:companySlug/:jobId',
+  candidateJobApply: '/user/jobs/:companySlug/:jobId/apply',
 } as const
 
 export const dashboardPathByRole: Record<UserRole, string> = {

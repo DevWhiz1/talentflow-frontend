@@ -35,8 +35,9 @@ export function ProtectedRoute({ allowedRoles }: ProtectedRouteProps): JSX.Eleme
 
   const profilePath = profilePathByRole[user.role]
   const isProfileRoute = location.pathname === profilePath
+  const isCandidateJobsRoute = user.role === 'candidate' && location.pathname.startsWith('/user/jobs')
 
-  if (user.profileCompleted === false && !isProfileRoute) {
+  if (user.profileCompleted === false && !isProfileRoute && !isCandidateJobsRoute) {
     return <Navigate replace to={profilePath} />
   }
 

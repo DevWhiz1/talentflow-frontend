@@ -62,7 +62,8 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
   }
 
   const logout = (): void => {
-    setState(initialState)
+    // Clear both in-memory state and persisted storage so the user is fully signed out
+    setState({ token: null, user: null })
     clearAuthSession()
   }
 

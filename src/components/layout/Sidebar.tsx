@@ -88,7 +88,7 @@ const candidateSidebarConfig: SidebarConfig = {
     {
       label: 'Jobs',
       icon: <FileText className="h-4 w-4" />,
-      to: `${appRoutes.userDashboard}#jobs`,
+      to: appRoutes.candidateJobs,
     },
     {
       label: 'Profile',

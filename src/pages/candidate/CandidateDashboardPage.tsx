@@ -70,7 +70,7 @@ export function CandidateDashboardPage(): JSX.Element {
           <button
             type="button"
             onClick={() => void loadDashboard()}
-            className="mt-5 inline-flex h-11 items-center justify-center rounded-xl bg-teal-600 px-4 text-sm font-medium text-white"
+            className="mt-5 inline-flex h-11 items-center justify-center rounded-xl bg-black px-4 text-sm font-medium text-white hover:bg-slate-800"
           >
             Retry
           </button>

@@ -1,5 +1,10 @@
 import { adminChartData, adminStats, appliedJobs, candidateStats, recommendedJobs } from '../constants/mockData'
 import type { AppliedJob, ChartDatum, DashboardStat, RecommendedJob } from '../types/dashboard'
+import type {
+  CandidateJobOpening,
+  JobApplicationSubmitPayload,
+  JobApplicationUploadResponse,
+} from '../types/jobApplication'
 import { delay } from '../utils/async'
 import { api } from './api'
 
@@ -68,6 +73,12 @@ interface JobDescriptionGenerateResponse {
   description: string
 }
 
+export interface CandidateCompanyJobsResponse {
+  companyName: string
+  companySlug: string
+  jobs: CandidateJobOpening[]
+}
+
 export interface AdminHrJobListItem {
   id: number
   title: string
@@ -123,6 +134,21 @@ export interface AdminHrJobDetail {
   creator_email?: string | null
 }
 
+export interface CandidateApplicationListItem {
+  id: number
+  job_id: number
+  candidate_id: number
+  first_name: string
+  last_name: string
+  email: string
+  current_job_title?: string | null
+  status: string
+  application_rating?: number | null
+  applied_at: string
+  is_viewed: boolean
+  is_flagged: boolean
+}
+
 export const createJob = async (payload: CreateJobPayload) => {
   const { data } = await api.post('/jobs/', payload)
   return data
@@ -131,7 +157,9 @@ export const createJob = async (payload: CreateJobPayload) => {
 export const generateJobDescription = async (
   payload: JobDescriptionGeneratePayload,
 ): Promise<string> => {
-  const { data } = await api.post<JobDescriptionGenerateResponse>('/jobs/generate-description', payload)
+  const { data } = await api.post<JobDescriptionGenerateResponse>('/jobs/generate-description', payload, {
+    timeout: 120000,
+  })
   return data.description
 }
 
@@ -221,4 +249,44 @@ export const getRecommendedJobs = async (): Promise<RecommendedJob[]> => {
 
     throw error
   }
+}
+
+export const getCandidateJobs = async (): Promise<CandidateJobOpening[]> => {
+  const { data } = await api.get<CandidateJobOpening[]>('/jobs/')
+  return data
+}
+
+export const getCompanyJobs = async (companySlug: string): Promise<CandidateJobOpening[]> => {
+  const { data } = await api.get<CandidateJobOpening[]>(`/jobs/company/${companySlug}`)
+  return data
+}
+
+export const getJobOpeningById = async (jobId: number): Promise<CandidateJobOpening> => {
+  const { data } = await api.get<CandidateJobOpening>(`/jobs/${jobId}`)
+  return data
+}
+
+export const uploadApplicationDocument = async (file: File): Promise<string> => {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const { data } = await api.post<JobApplicationUploadResponse>('/job-applications/upload-document', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+
+  return data.url
+}
+
+export const submitJobApplication = async (
+  payload: JobApplicationSubmitPayload,
+): Promise<Record<string, unknown>> => {
+  const { data } = await api.post<Record<string, unknown>>('/job-applications/apply', payload)
+  return data
+}
+
+export const getMyJobApplications = async (): Promise<CandidateApplicationListItem[]> => {
+  const { data } = await api.get<CandidateApplicationListItem[]>('/job-applications/my-applications')
+  return data
 }
