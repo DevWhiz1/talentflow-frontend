@@ -59,6 +59,7 @@ export const signup = async (payload: SignupPayload): Promise<AuthResponse> => {
     email: payload.email,
     password: payload.password,
     role: payload.role,
+    company_name: payload.company_name,
   })
 
   return mapAuthResponse(data)

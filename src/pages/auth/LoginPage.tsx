@@ -6,11 +6,9 @@ import { z } from 'zod'
 import { AuthPageShell } from '../../components/auth/AuthPageShell'
 import { Button, Input, Select } from '../../components/ui'
 import { appRoutes, dashboardPathByRole, profilePathByRole } from '../../constants/routes'
-import { storageKeys } from '../../constants/storage'
 import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
 import { getErrorMessage } from '../../utils/errors'
-import { writeStoredString } from '../../utils/storage'
 import type { LoginPayload } from '../../types/auth'
 
 const loginSchema = z.object({
@@ -62,9 +60,7 @@ export function LoginPage(): JSX.Element {
         variant: 'success',
       })
 
-      if (response.user.role === 'candidate' && companySlug) {
-        writeStoredString(storageKeys.candidateCompanySlug, companySlug)
-      }
+      // No need to save to local storage, company name is now in user profile
 
       if (response.user.role === 'candidate' && redirectPath) {
         navigate(redirectPath, { replace: true })

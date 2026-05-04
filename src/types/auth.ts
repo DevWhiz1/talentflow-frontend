@@ -56,6 +56,7 @@ export interface SignupPayload {
   email: string
   password: string
   role: UserRole
+  company_name?: string
 }
 
 export type AuthResponse = AuthSession

@@ -4,12 +4,11 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Badge, Button, Card, Input, Select, SectionHeader } from '../../components/ui'
 import { AppShell } from '../../components/layout'
 import { appRoutes } from '../../constants/routes'
-import { storageKeys } from '../../constants/storage'
+import { useAuth } from '../../hooks/useAuth'
 import { getCompanyJobs } from '../../services/jobService'
 import type { CandidateJobOpening } from '../../types/jobApplication'
 import { getErrorMessage } from '../../utils/errors'
 import { slugify } from '../../utils/slug'
-import { readStoredString } from '../../utils/storage'
 
 const buildJobDetailPath = (companySlug: string, jobId: number): string =>
   `/user/jobs/${companySlug}/${jobId}`
@@ -33,6 +32,7 @@ function formatPostedDate(value?: string | null): string {
 
 export function CandidateCompanyJobsPage(): JSX.Element {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { companySlug } = useParams<{ companySlug?: string }>()
   const [jobs, setJobs] = useState<CandidateJobOpening[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -44,13 +44,16 @@ export function CandidateCompanyJobsPage(): JSX.Element {
 
   useEffect(() => {
     const loadJobs = async (): Promise<void> => {
-      if (!companySlug) {
-        const savedCompanySlug = readStoredString(storageKeys.candidateCompanySlug)
-        if (savedCompanySlug) {
-          navigate(appRoutes.candidateCompanyJobs.replace(':companySlug', savedCompanySlug), { replace: true })
-          return
-        }
+      let slug = companySlug
+      
+      if (!slug && user?.companyName) {
+        // Use company name from user profile instead of local storage
+        slug = slugify(user.companyName)
+        navigate(appRoutes.candidateCompanyJobs.replace(':companySlug', slug), { replace: true })
+        return
+      }
 
+      if (!slug) {
         setJobs([])
         setError('No company has been assigned to this account yet.')
         setIsLoading(false)
@@ -61,7 +64,7 @@ export function CandidateCompanyJobsPage(): JSX.Element {
       setError(null)
 
       try {
-        const response = await getCompanyJobs(companySlug)
+        const response = await getCompanyJobs(slug)
         setJobs(response)
       } catch (loadError) {
         setError(getErrorMessage(loadError, 'Failed to load job openings.'))
@@ -71,7 +74,7 @@ export function CandidateCompanyJobsPage(): JSX.Element {
     }
 
     void loadJobs()
-  }, [companySlug, navigate])
+  }, [companySlug, navigate, user?.companyName])
 
   const companyName = useMemo(() => jobs[0]?.company_name ?? 'All companies', [jobs])
   const companyDisplayName = useMemo(() => {

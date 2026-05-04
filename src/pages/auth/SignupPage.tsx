@@ -1,4 +1,5 @@
 import type { JSX } from 'react'
+import { useEffect, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -6,11 +7,10 @@ import { z } from 'zod'
 import { AuthPageShell } from '../../components/auth/AuthPageShell'
 import { Button, Input, Select } from '../../components/ui'
 import { appRoutes, dashboardPathByRole, profilePathByRole } from '../../constants/routes'
-import { storageKeys } from '../../constants/storage'
 import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
 import { getErrorMessage } from '../../utils/errors'
-import { writeStoredString } from '../../utils/storage'
+import { getCompanyJobs } from '../../services/jobService'
 import type { SignupPayload } from '../../types/auth'
 
 const signupSchema = z.object({
@@ -27,6 +27,8 @@ export function SignupPage(): JSX.Element {
   const [searchParams] = useSearchParams()
   const { signup } = useAuth()
   const { showToast } = useToast()
+  const [companyName, setCompanyName] = useState<string | undefined>()
+  const [isLoadingCompany, setIsLoadingCompany] = useState(false)
 
   const redirectPath = searchParams.get('redirect')
   const companySlug = searchParams.get('company')
@@ -39,6 +41,25 @@ export function SignupPage(): JSX.Element {
   }
   const authQueryString = authQuery.toString()
   const loginLink = authQueryString ? `${appRoutes.login}?${authQueryString}` : appRoutes.login
+
+  // Fetch company name from company slug
+  useEffect(() => {
+    if (companySlug) {
+      setIsLoadingCompany(true)
+      getCompanyJobs(companySlug)
+        .then((jobs) => {
+          if (jobs.length > 0 && jobs[0].company_name) {
+            setCompanyName(jobs[0].company_name)
+          }
+        })
+        .catch(() => {
+          // Failed to fetch company name, but continue
+        })
+        .finally(() => {
+          setIsLoadingCompany(false)
+        })
+    }
+  }, [companySlug])
 
   const {
     register,
@@ -56,7 +77,10 @@ export function SignupPage(): JSX.Element {
 
   const onSubmit = async (values: SignupFormValues): Promise<void> => {
     try {
-      const payload: SignupPayload = values
+      const payload: SignupPayload = {
+        ...values,
+        company_name: companyName,
+      }
       const response = await signup(payload)
       showToast({
         title: 'Account created',
@@ -64,9 +88,7 @@ export function SignupPage(): JSX.Element {
         variant: 'success',
       })
 
-      if (response.user.role === 'candidate' && companySlug) {
-        writeStoredString(storageKeys.candidateCompanySlug, companySlug)
-      }
+      // No need to save to local storage, company name is now in user profile
 
       if (response.user.role === 'candidate' && redirectPath) {
         navigate(redirectPath, { replace: true })
