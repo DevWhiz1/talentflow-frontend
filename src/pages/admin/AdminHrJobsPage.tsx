@@ -111,12 +111,18 @@ export function AdminHrJobsPage(): JSX.Element {
   }, [jobs, searchTerm, statusFilter, employmentTypeFilter, workModeFilter])
 
   // Extract unique filter values
-  const uniqueStatuses = useMemo(() => [...new Set(jobs.map((j) => j.status))].filter(Boolean), [jobs])
-  const uniqueEmploymentTypes = useMemo(
-    () => [...new Set(jobs.map((j) => j.employment_type))].filter(Boolean),
+  const uniqueStatuses = useMemo(
+    () => [...new Set(jobs.map((j) => j.status).filter((value): value is string => Boolean(value)))],
     [jobs],
   )
-  const uniqueWorkModes = useMemo(() => [...new Set(jobs.map((j) => j.work_mode))].filter(Boolean), [jobs])
+  const uniqueEmploymentTypes = useMemo(
+    () => [...new Set(jobs.map((j) => j.employment_type).filter((value): value is string => Boolean(value)))],
+    [jobs],
+  )
+  const uniqueWorkModes = useMemo(
+    () => [...new Set(jobs.map((j) => j.work_mode).filter((value): value is string => Boolean(value)))],
+    [jobs],
+  )
 
   const handleViewDetails = (jobId: number): void => {
     navigate(`/admin/hr/${jobId}`)

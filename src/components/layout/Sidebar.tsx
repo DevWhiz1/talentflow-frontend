@@ -8,6 +8,7 @@ import {
   HelpCircle,
   LayoutDashboard,
   ListChecks,
+  ClipboardCheck,
   Settings,
   Users,
   X,
@@ -62,6 +63,11 @@ const adminSidebarConfig: SidebarConfig = {
       to: appRoutes.adminHrScoring,
     },
     {
+      label: 'Assessments',
+      icon: <ClipboardCheck className="h-4 w-4" />,
+      to: appRoutes.adminAssessments,
+    },
+    {
       label: 'Company Profile',
       icon: <Users className="h-4 w-4" />,
       to: appRoutes.adminProfile,
@@ -95,6 +101,11 @@ const candidateSidebarConfig: SidebarConfig = {
       label: 'Jobs',
       icon: <FileText className="h-4 w-4" />,
       to: appRoutes.candidateJobs,
+    },
+    {
+      label: 'Assessments',
+      icon: <ClipboardCheck className="h-4 w-4" />,
+      to: appRoutes.candidateAssessments,
     },
     {
       label: 'Profile',

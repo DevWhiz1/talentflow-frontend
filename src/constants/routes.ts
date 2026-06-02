@@ -12,6 +12,7 @@ export const appRoutes = {
   adminHrScoring: '/admin/hr/scoring',
   adminHrJobScoring: '/admin/hr/:jobId/scoring',
   adminHrApplicantDetail: '/admin/hr/scoring/applications/:applicationId',
+  adminAssessments: '/admin/assessments',
   adminAnalytics: '/admin/analytics',
   adminProfile: '/admin/profile',
   adminJobsNew: '/admin/jobs/new',
@@ -21,6 +22,8 @@ export const appRoutes = {
   candidateCompanyJobs: '/user/jobs/:companySlug',
   candidateJobDetail: '/user/jobs/:companySlug/:jobId',
   candidateJobApply: '/user/jobs/:companySlug/:jobId/apply',
+  candidateAssessments: '/user/assessments',
+  candidateAssessmentDetail: '/user/assessments/:inviteToken',
 } as const
 
 export const dashboardPathByRole: Record<UserRole, string> = {

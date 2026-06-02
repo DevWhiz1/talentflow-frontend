@@ -66,7 +66,7 @@ export function SignupPage(): JSX.Element {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<SignupFormValues>({
-    resolver: zodResolver(signupSchema),
+    resolver: zodResolver(signupSchema) as never,
     defaultValues: {
       name: '',
       email: '',
@@ -148,7 +148,7 @@ export function SignupPage(): JSX.Element {
         </div>
 
         <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? 'Creating account...' : 'Create account'}
+          {isSubmitting ? 'Creating account...' : isLoadingCompany ? 'Preparing company context...' : 'Create account'}
         </Button>
       </form>
     </AuthPageShell>

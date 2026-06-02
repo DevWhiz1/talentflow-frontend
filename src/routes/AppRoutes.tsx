@@ -12,11 +12,13 @@ import { AdminHrJobDetailPage } from '../pages/admin/AdminHrJobDetailPage'
 import { AdminHrJobEditPage } from '../pages/admin/AdminHrJobEditPage'
 import { AdminHrScoringPage } from '../pages/admin/AdminHrScoringPage'
 import { AdminHrApplicantDetailPage } from '../pages/admin/AdminHrApplicantDetailPage'
+import { AdminAssessmentsPage } from '../pages/admin/AdminAssessmentsPage'
 import { CandidateDashboardPage } from '../pages/candidate/CandidateDashboardPage'
 import { CandidateProfilePage } from '../pages/candidate/CandidateProfilePage'
 import { CandidateCompanyJobsPage } from '../pages/candidate/CandidateCompanyJobsPage'
 import { CandidateJobDetailPage } from '../pages/candidate/CandidateJobDetailPage'
 import { CandidateJobApplyPage } from '../pages/candidate/CandidateJobApplyPage'
+import { CandidateAssessmentsPage } from '../pages/candidate/CandidateAssessmentsPage'
 import { PublicCompanyJobsPage } from '../pages/public/PublicCompanyJobsPage'
 import { PublicJobDetailPage } from '../pages/public/PublicJobDetailPage'
 import { LoginPage } from '../pages/auth/LoginPage'
@@ -57,6 +59,7 @@ export function AppRoutes(): JSX.Element {
         <Route path={appRoutes.adminHrJobs} element={<AdminHrJobsPage />} />
         <Route path={appRoutes.adminHrScoring} element={<AdminHrScoringPage />} />
         <Route path={appRoutes.adminHrApplicantDetail} element={<AdminHrApplicantDetailPage />} />
+        <Route path={appRoutes.adminAssessments} element={<AdminAssessmentsPage />} />
         <Route path={appRoutes.adminHrJobScoring} element={<AdminHrScoringPage />} />
         <Route path={appRoutes.adminHrJobDetail} element={<AdminHrJobDetailPage />} />
         <Route path={appRoutes.adminHrJobEdit} element={<AdminHrJobEditPage />} />
@@ -72,6 +75,8 @@ export function AppRoutes(): JSX.Element {
         <Route path={appRoutes.candidateCompanyJobs} element={<CandidateCompanyJobsPage />} />
         <Route path={appRoutes.candidateJobDetail} element={<CandidateJobDetailPage />} />
         <Route path={appRoutes.candidateJobApply} element={<CandidateJobApplyPage />} />
+        <Route path={appRoutes.candidateAssessments} element={<CandidateAssessmentsPage />} />
+        <Route path={appRoutes.candidateAssessmentDetail} element={<CandidateAssessmentsPage />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

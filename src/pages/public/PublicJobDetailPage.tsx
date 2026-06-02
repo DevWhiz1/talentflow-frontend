@@ -17,12 +17,6 @@ function buildCompanyJobsPath(companySlug: string): string {
   return appRoutes.publicCompanyJobs.replace(':companySlug', companySlug)
 }
 
-function buildPublicJobPath(companySlug: string, jobId: number): string {
-  return appRoutes.publicJobDetail
-    .replace(':companySlug', companySlug)
-    .replace(':jobId', String(jobId))
-}
-
 function buildCandidateApplyPath(companySlug: string, jobId: number): string {
   return appRoutes.candidateJobApply
     .replace(':companySlug', companySlug)
@@ -188,9 +182,12 @@ export function PublicJobDetailPage(): JSX.Element {
                   <Button onClick={() => navigate(candidateApplyPath)}>Continue to apply</Button>
                 ) : (
                   <div className="text-right">
-                    <Button asChild>
-                      <Link to={signupLink}>Register to apply</Link>
-                    </Button>
+                    <Link
+                      to={signupLink}
+                      className="inline-flex h-11 items-center justify-center rounded-xl bg-black px-4 text-sm font-medium text-white shadow-sm shadow-slate-200 transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+                    >
+                      Register to apply
+                    </Link>
                     <p className="mt-2 text-xs text-slate-500">
                       Already registered?{' '}
                       <Link to={loginLink} className="font-semibold text-teal-700 hover:underline">
