@@ -1,9 +1,12 @@
 import type { JSX } from 'react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   BarChart2,
   Briefcase,
+  CalendarClock,
+  ChevronUp,
+  Circle,
   FileText,
   HelpCircle,
   LayoutDashboard,
@@ -21,6 +24,7 @@ import talentflowLogo from '../../assets/talentflow-logo.png'
 interface SidebarChildLink {
   label: string
   to: string
+  icon?: JSX.Element
 }
 
 interface SidebarItem {
@@ -66,6 +70,17 @@ const adminSidebarConfig: SidebarConfig = {
       label: 'Assessments',
       icon: <ClipboardCheck className="h-4 w-4" />,
       to: appRoutes.adminAssessments,
+    },
+    {
+      label: 'Interviews',
+      icon: <CalendarClock className="h-4 w-4" />,
+      to: appRoutes.adminInterviews,
+      children: [
+        { label: 'All Interviews', to: appRoutes.adminInterviews, icon: <Circle className="h-3 w-3 fill-current" /> },
+        { label: 'Shortlisted Candidates', to: appRoutes.adminInterviewShortlist, icon: <Users className="h-4 w-4" /> },
+        { label: 'Schedule Interview', to: appRoutes.adminInterviewSchedule, icon: <CalendarClock className="h-4 w-4" /> },
+        { label: 'Scheduled Interviews', to: appRoutes.adminInterviewScheduled, icon: <ListChecks className="h-4 w-4" /> },
+      ],
     },
     {
       label: 'Company Profile',
@@ -147,20 +162,27 @@ function SidebarItemRow({
   item,
   active,
   collapsed,
+  grouped = false,
 }: {
   item: SidebarItem
   active: boolean
   collapsed: boolean
+  grouped?: boolean
 }): JSX.Element {
   const content = (
     <div
       className={classNames(
         'flex items-center rounded-2xl px-3 py-2 text-sm transition',
-        active ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100',
+        grouped && active ? 'bg-blue-50 text-blue-700' : active ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100',
         collapsed ? 'justify-center' : 'gap-3',
       )}
     >
-      <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+      <span
+        className={classNames(
+          'inline-flex h-8 w-8 items-center justify-center rounded-xl',
+          grouped && active ? 'bg-blue-600 text-white' : active ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-600',
+        )}
+      >
         {item.icon}
       </span>
       {!collapsed && <span className="truncate font-medium">{item.label}</span>}
@@ -187,12 +209,23 @@ function SidebarSection({
   currentPath: string
   collapsed: boolean
 }): JSX.Element {
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
+
+  const toggleGroup = (label: string): void => {
+    setOpenGroups((current) => ({ ...current, [label]: !current[label] }))
+  }
+
+  const closeGroup = (label: string): void => {
+    setOpenGroups((current) => ({ ...current, [label]: false }))
+  }
+
   return (
     <div className="space-y-1">
       {items.map((item) => {
         const hasChildren = item.children && item.children.length > 0
         const isActiveDirect = item.to
           ? currentPath === item.to
+            || (item.to === appRoutes.adminInterviews && currentPath.startsWith(appRoutes.adminInterviews))
             || (item.to === appRoutes.adminHrScoring && currentPath.startsWith(appRoutes.adminHrScoring))
           : false
         const isActiveChild =
@@ -200,34 +233,43 @@ function SidebarSection({
         const active = isActiveDirect || Boolean(isActiveChild)
 
         if (hasChildren && !collapsed) {
+          const open = Boolean(openGroups[item.label])
           return (
-            <details
-              key={item.label}
-              className="group rounded-2xl bg-transparent"
-              open={isActiveChild || item.label === 'Stock'}
-            >
-              <summary className="list-none">
-                <SidebarItemRow item={item} active={active} collapsed={collapsed} />
-              </summary>
-              <div className="mt-1 space-y-1 pl-4">
+            <div key={item.label} className="rounded-2xl bg-transparent">
+              <button type="button" className="block w-full" onClick={() => toggleGroup(item.label)}>
+                <div className="relative">
+                  <SidebarItemRow item={{ ...item, to: undefined }} active={active} collapsed={collapsed} grouped />
+                  <ChevronUp
+                    className={classNames(
+                      'pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-blue-600 transition',
+                      !open && 'rotate-180',
+                    )}
+                  />
+                </div>
+              </button>
+              {open ? <div className="relative ml-7 mt-2 space-y-1 border-l border-blue-100 pl-3">
                 {item.children!.map((child) => {
-                  const childActive = currentPath.startsWith(child.to)
+                  const childActive = child.to === appRoutes.adminInterviews
+                    ? currentPath === child.to
+                    : currentPath.startsWith(child.to)
                   return (
-                    <Link key={child.to} to={child.to} className="block">
+                    <Link key={child.to} to={child.to} className="block" onClick={() => closeGroup(item.label)}>
                       <div
                         className={classNames(
-                          'flex items-center rounded-2xl px-3 py-2 text-sm text-slate-600 transition',
-                          childActive ? 'bg-slate-900/5 text-slate-900' : 'hover:bg-slate-100',
+                          'relative flex items-center gap-3 rounded-none px-3 py-2.5 text-sm transition',
+                          childActive ? 'bg-blue-50 text-blue-700 shadow-[inset_2px_0_0_#2563eb]' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
                         )}
                       >
-                        <BarChart2 className="mr-2 h-4 w-4" />
+                        <span className={classNames('inline-flex h-5 w-5 items-center justify-center', childActive ? 'text-blue-700' : 'text-slate-500')}>
+                          {child.icon || <BarChart2 className="h-4 w-4" />}
+                        </span>
                         <span className="truncate">{child.label}</span>
                       </div>
                     </Link>
                   )
                 })}
-              </div>
-            </details>
+              </div> : null}
+            </div>
           )
         }
 
