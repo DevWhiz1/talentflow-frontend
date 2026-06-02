@@ -156,6 +156,7 @@ export function PublicCompanyJobsPage(): JSX.Element {
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
             <Input
+              label="Search jobs"
               placeholder="Search jobs..."
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}

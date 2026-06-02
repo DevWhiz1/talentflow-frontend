@@ -57,7 +57,7 @@ export function AdminJobCreatePage(): JSX.Element {
     watch,
     formState: { errors, isSubmitting },
   } = useForm<CreateJobFormValues>({
-    resolver: zodResolver(createJobSchema),
+    resolver: zodResolver(createJobSchema) as never,
     defaultValues,
   })
 

@@ -59,7 +59,7 @@ export function CandidateProfilePage(): JSX.Element {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<CandidateProfileFormValues>({
-    resolver: zodResolver(candidateProfileSchema),
+    resolver: zodResolver(candidateProfileSchema) as never,
     values: defaultValues,
   })
 

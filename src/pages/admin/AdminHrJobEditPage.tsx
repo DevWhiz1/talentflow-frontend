@@ -56,7 +56,7 @@ export function AdminHrJobEditPage(): JSX.Element {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<EditJobFormValues>({
-    resolver: zodResolver(editJobSchema),
+    resolver: zodResolver(editJobSchema) as never,
     defaultValues,
   })
 
