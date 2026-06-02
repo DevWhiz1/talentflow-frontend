@@ -1,6 +1,8 @@
 import { adminChartData, adminStats, appliedJobs, candidateStats, recommendedJobs } from '../constants/mockData'
 import type { AppliedJob, ChartDatum, DashboardStat, RecommendedJob } from '../types/dashboard'
 import type {
+  AdminJobApplicant,
+  AdminJobApplicantDetail,
   CandidateJobOpening,
   JobApplicationSubmitPayload,
   JobApplicationUploadResponse,
@@ -288,5 +290,20 @@ export const submitJobApplication = async (
 
 export const getMyJobApplications = async (): Promise<CandidateApplicationListItem[]> => {
   const { data } = await api.get<CandidateApplicationListItem[]>('/job-applications/my-applications')
+  return data
+}
+
+export const getAdminJobApplicants = async (jobId: number): Promise<AdminJobApplicant[]> => {
+  const { data } = await api.get<AdminJobApplicant[]>(`/job-applications/job/${jobId}/applications`, {
+    params: {
+      sort_by: 'score',
+      limit: 100,
+    },
+  })
+  return data
+}
+
+export const getAdminJobApplicantById = async (applicationId: number): Promise<AdminJobApplicantDetail> => {
+  const { data } = await api.get<AdminJobApplicantDetail>(`/job-applications/${applicationId}`)
   return data
 }

@@ -7,6 +7,7 @@ import {
   FileText,
   HelpCircle,
   LayoutDashboard,
+  ListChecks,
   Settings,
   Users,
   X,
@@ -54,6 +55,11 @@ const adminSidebarConfig: SidebarConfig = {
       label: 'HR Jobs',
       icon: <FileText className="h-4 w-4" />,
       to: appRoutes.adminHrJobs,
+    },
+    {
+      label: 'Scoring',
+      icon: <ListChecks className="h-4 w-4" />,
+      to: appRoutes.adminHrScoring,
     },
     {
       label: 'Company Profile',
@@ -174,7 +180,10 @@ function SidebarSection({
     <div className="space-y-1">
       {items.map((item) => {
         const hasChildren = item.children && item.children.length > 0
-        const isActiveDirect = item.to ? currentPath === item.to : false
+        const isActiveDirect = item.to
+          ? currentPath === item.to
+            || (item.to === appRoutes.adminHrScoring && currentPath.startsWith(appRoutes.adminHrScoring))
+          : false
         const isActiveChild =
           hasChildren && item.children!.some((child) => currentPath === child.to)
         const active = isActiveDirect || Boolean(isActiveChild)

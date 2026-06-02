@@ -38,6 +38,7 @@ const applicationSchema = z.object({
   email: z.string().email('Enter a valid email address'),
   headline: z.string().optional(),
   phone: z.string().min(8, 'Phone number is required'),
+  address: z.string().min(3, 'Address is required'),
   city: z.string().min(2, 'City is required'),
   country: z.string().min(2, 'Country is required'),
   portfolioUrl: z.string().optional(),
@@ -240,6 +241,7 @@ export function CandidateJobApplyPage(): JSX.Element {
       email: '',
       headline: '',
       phone: '',
+      address: '',
       city: '',
       country: '',
       portfolioUrl: '',
@@ -458,6 +460,7 @@ export function CandidateJobApplyPage(): JSX.Element {
       last_name: values.lastName.trim(),
       email: values.email.trim(),
       phone: values.phone.trim(),
+      address: values.address.trim(),
       city: values.city.trim(),
       country: values.country.trim(),
       headline: values.headline?.trim() || undefined,
@@ -595,6 +598,7 @@ export function CandidateJobApplyPage(): JSX.Element {
                     <Input label="Last name" required error={errors.lastName?.message} {...register('lastName')} />
                     <Input label="Email" required error={errors.email?.message} {...register('email')} />
                     <Input label="Phone" required error={errors.phone?.message} {...register('phone')} />
+                    <Input label="Address" required className="sm:col-span-2" error={errors.address?.message} {...register('address')} />
                     <Input label="City" required error={errors.city?.message} {...register('city')} />
                     <Input label="Country" required error={errors.country?.message} {...register('country')} />
                     <Input label="Headline" className="sm:col-span-2" error={errors.headline?.message} {...register('headline')} />

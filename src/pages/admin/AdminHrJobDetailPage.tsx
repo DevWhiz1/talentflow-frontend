@@ -2,13 +2,14 @@ import type { JSX } from 'react'
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Markdown from 'react-markdown'
-import { ArrowLeft, Share2 } from 'lucide-react'
+import { ArrowLeft, Share2, Sparkles } from 'lucide-react'
 import { AppShell } from '../../components/layout'
 import { Badge, Card } from '../../components/ui'
 import { appRoutes } from '../../constants/routes'
 import { useToast } from '../../hooks/useToast'
 import type { AdminHrJobDetail } from '../../services/jobService'
-import { getAdminHrJobById } from '../../services/jobService'
+import { getAdminHrJobById, getAdminJobApplicants } from '../../services/jobService'
+import type { AdminJobApplicant } from '../../types/jobApplication'
 import { getErrorMessage } from '../../utils/errors'
 import { slugify } from '../../utils/slug'
 
@@ -34,6 +35,14 @@ function formatLabel(value?: string | null): string {
     .split('_')
     .join(' ')
     .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
+function formatScore(value?: number | null): string {
+  if (value == null) {
+    return 'Pending'
+  }
+
+  return `${Math.round(value)}%`
 }
 
 function buildPublicJobPath(companyName: string | null | undefined, jobId: number): string {
@@ -102,12 +111,88 @@ function MarkdownSection({ title, content }: { title: string; content?: string }
   )
 }
 
+function scoreTone(score?: number | null): 'neutral' | 'info' | 'success' | 'warning' {
+  if (score == null) {
+    return 'neutral'
+  }
+
+  if (score >= 75) {
+    return 'success'
+  }
+
+  if (score >= 50) {
+    return 'info'
+  }
+
+  return 'warning'
+}
+
+function ApplicantList({
+  applicants,
+  isLoading,
+  onSelect,
+}: {
+  applicants: AdminJobApplicant[]
+  isLoading: boolean
+  onSelect: (applicationId: number) => void
+}): JSX.Element {
+  if (isLoading) {
+    return (
+      <Card className="p-6">
+        <p className="text-sm text-slate-600">Loading applicants...</p>
+      </Card>
+    )
+  }
+
+  if (applicants.length === 0) {
+    return (
+      <Card className="p-6">
+        <p className="text-sm font-medium text-slate-900">No applicants yet</p>
+        <p className="mt-1 text-sm text-slate-600">Applicants will appear here after candidates apply.</p>
+      </Card>
+    )
+  }
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="grid grid-cols-[1fr,110px,120px] gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
+        <span>Applicant</span>
+        <span>Score</span>
+        <span>Status</span>
+      </div>
+      {applicants.map((applicant) => (
+        <button
+          key={applicant.id}
+          type="button"
+          onClick={() => onSelect(applicant.id)}
+          className="grid w-full grid-cols-[1fr,110px,120px] gap-3 border-b border-slate-100 bg-white px-4 py-4 text-left transition last:border-b-0 hover:bg-slate-50"
+        >
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold text-slate-900">
+              {applicant.first_name} {applicant.last_name}
+            </span>
+            <span className="mt-1 block truncate text-xs text-slate-500">
+              {applicant.current_job_title || applicant.email}
+            </span>
+          </span>
+          <span>
+            <Badge tone={scoreTone(applicant.match_score)}>{formatScore(applicant.match_score)}</Badge>
+          </span>
+          <span className="text-sm font-medium capitalize text-slate-700">{formatLabel(applicant.status)}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export function AdminHrJobDetailPage(): JSX.Element {
   const { jobId } = useParams<{ jobId: string }>()
   const navigate = useNavigate()
   const { showToast } = useToast()
   const [job, setJob] = useState<AdminHrJobDetail | null>(null)
+  const [applicants, setApplicants] = useState<AdminJobApplicant[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isApplicantsLoading, setIsApplicantsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -120,6 +205,7 @@ export function AdminHrJobDetailPage(): JSX.Element {
 
       try {
         setIsLoading(true)
+        setIsApplicantsLoading(true)
         setError(null)
         const jobIdNum = Number.parseInt(jobId, 10)
         if (Number.isNaN(jobIdNum)) {
@@ -127,17 +213,26 @@ export function AdminHrJobDetailPage(): JSX.Element {
           return
         }
 
-        const details = await getAdminHrJobById(jobIdNum)
+        const [details, applicantList] = await Promise.all([
+          getAdminHrJobById(jobIdNum),
+          getAdminJobApplicants(jobIdNum),
+        ])
         setJob(details)
+        setApplicants(applicantList)
       } catch (err) {
         setError(getErrorMessage(err, 'Unable to load job details'))
       } finally {
         setIsLoading(false)
+        setIsApplicantsLoading(false)
       }
     }
 
     void loadJobDetail()
   }, [jobId])
+
+  const handleSelectApplicant = (applicationId: number): void => {
+    navigate(appRoutes.adminHrApplicantDetail.replace(':applicationId', String(applicationId)))
+  }
 
   const handleSharePublicLink = async (): Promise<void> => {
     if (!job) {
@@ -228,6 +323,12 @@ export function AdminHrJobDetailPage(): JSX.Element {
               Share Public Link
             </button>
             <button
+              onClick={() => navigate(appRoutes.adminHrJobScoring.replace(':jobId', String(job.id)))}
+              className="rounded-lg border border-black bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-slate-100"
+            >
+              View Scoring
+            </button>
+            <button
               onClick={() => navigate(`/admin/hr/${job.id}/edit`)}
               className="rounded-lg border border-black bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
             >
@@ -243,6 +344,28 @@ export function AdminHrJobDetailPage(): JSX.Element {
             <span>{job.location || 'N/A'}</span>
             <span className="text-slate-400">•</span>
             <span className="font-mono text-xs text-slate-500">ID: {job.id}</span>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-teal-600" />
+                <h2 className="text-xl font-semibold text-slate-900">Applicants Ranked by Score</h2>
+              </div>
+              <p className="mt-1 text-sm text-slate-600">
+                Scored candidates appear highest after the resume analysis service completes.
+              </p>
+            </div>
+            <Badge tone="info">{applicants.length} applicants</Badge>
+          </div>
+          <div>
+            <ApplicantList
+              applicants={applicants}
+              isLoading={isApplicantsLoading}
+              onSelect={handleSelectApplicant}
+            />
           </div>
         </div>
 
