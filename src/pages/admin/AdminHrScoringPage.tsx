@@ -1,13 +1,13 @@
 import type { JSX } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowUpRight, Briefcase, Search, Sparkles } from 'lucide-react'
+import { ArrowUpRight, Briefcase, Search, Sparkles, UserCheck } from 'lucide-react'
 import { AppShell } from '../../components/layout'
-import { Badge, Card } from '../../components/ui'
+import { Badge, Button, Card } from '../../components/ui'
 import { appRoutes } from '../../constants/routes'
 import { useToast } from '../../hooks/useToast'
 import type { AdminHrJobListItem } from '../../services/jobService'
-import { getAdminHrJobs, getAdminJobApplicants } from '../../services/jobService'
+import { getAdminHrJobs, getAdminJobApplicants, updateJobApplicationStatus } from '../../services/jobService'
 import type { AdminJobApplicant } from '../../types/jobApplication'
 import { getErrorMessage } from '../../utils/errors'
 
@@ -56,6 +56,7 @@ export function AdminHrScoringPage(): JSX.Element {
   const [searchTerm, setSearchTerm] = useState('')
   const [isJobsLoading, setIsJobsLoading] = useState(true)
   const [isApplicantsLoading, setIsApplicantsLoading] = useState(false)
+  const [shortlistingId, setShortlistingId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -125,6 +126,36 @@ export function AdminHrScoringPage(): JSX.Element {
 
   const handleSelectApplicant = (applicationId: number): void => {
     navigate(appRoutes.adminHrApplicantDetail.replace(':applicationId', String(applicationId)))
+  }
+
+  const handleShortlistApplicant = async (applicationId: number): Promise<void> => {
+    try {
+      setShortlistingId(applicationId)
+      const updated = await updateJobApplicationStatus(applicationId, {
+        status: 'shortlisted',
+        screening_notes: 'Shortlisted by HR from scoring.',
+      })
+      setApplicants((current) =>
+        current.map((applicant) =>
+          applicant.id === applicationId
+            ? { ...applicant, status: updated.status, application_rating: updated.application_rating ?? applicant.application_rating }
+            : applicant,
+        ),
+      )
+      showToast({
+        title: 'Candidate shortlisted',
+        description: 'Candidate is now ready for interview scheduling.',
+        variant: 'success',
+      })
+    } catch (err) {
+      showToast({
+        title: 'Unable to shortlist candidate',
+        description: getErrorMessage(err, 'Please try again.'),
+        variant: 'error',
+      })
+    } finally {
+      setShortlistingId(null)
+    }
   }
 
   return (
@@ -214,10 +245,11 @@ export function AdminHrScoringPage(): JSX.Element {
           </Card>
 
           <Card className="overflow-hidden">
-              <div className="grid grid-cols-[1fr,110px,120px] gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
+              <div className="grid grid-cols-[1fr,110px,120px,150px] gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
                 <span>Candidate</span>
                 <span>Score</span>
                 <span>Status</span>
+                <span>Action</span>
               </div>
 
               {isApplicantsLoading ? <div className="p-5 text-sm text-slate-600">Loading applicants...</div> : null}
@@ -226,25 +258,38 @@ export function AdminHrScoringPage(): JSX.Element {
               ) : null}
 
               {!isApplicantsLoading && applicants.map((applicant) => (
-                <button
+                <div
                   key={applicant.id}
-                  type="button"
-                  onClick={() => handleSelectApplicant(applicant.id)}
-                  className="grid w-full grid-cols-[1fr,110px,120px] gap-3 border-b border-slate-100 bg-white px-4 py-4 text-left transition last:border-b-0 hover:bg-slate-50"
+                  className="grid w-full grid-cols-[1fr,110px,120px,150px] gap-3 border-b border-slate-100 bg-white px-4 py-4 text-left transition last:border-b-0 hover:bg-slate-50"
                 >
-                  <span className="min-w-0">
+                  <button type="button" onClick={() => handleSelectApplicant(applicant.id)} className="min-w-0 text-left">
                     <span className="block truncate text-sm font-semibold text-slate-900">
                       {applicant.first_name} {applicant.last_name}
                     </span>
                     <span className="mt-1 block truncate text-xs text-slate-500">
                       {applicant.current_job_title || applicant.email}
                     </span>
-                  </span>
+                  </button>
                   <span>
                     <Badge tone={scoreTone(applicant.match_score)}>{formatScore(applicant.match_score)}</Badge>
                   </span>
                   <span className="text-sm font-medium text-slate-700">{formatLabel(applicant.status)}</span>
-                </button>
+                  <span>
+                    {['shortlisted', 'interview'].includes(applicant.status) ? (
+                      <Badge tone="success">Ready</Badge>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        disabled={shortlistingId === applicant.id}
+                        onClick={() => void handleShortlistApplicant(applicant.id)}
+                      >
+                        <UserCheck className="mr-2 h-4 w-4" />
+                        {shortlistingId === applicant.id ? 'Saving' : 'Shortlist'}
+                      </Button>
+                    )}
+                  </span>
+                </div>
               ))}
           </Card>
         </div>

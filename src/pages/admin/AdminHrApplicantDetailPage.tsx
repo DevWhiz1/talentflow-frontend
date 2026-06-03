@@ -1,11 +1,12 @@
 import type { JSX, ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, ExternalLink, FileText } from 'lucide-react'
+import { ArrowLeft, CalendarPlus, ExternalLink, FileText, UserCheck } from 'lucide-react'
 import { AppShell } from '../../components/layout'
-import { Badge, Card } from '../../components/ui'
+import { Badge, Button, Card } from '../../components/ui'
 import { appRoutes } from '../../constants/routes'
-import { getAdminJobApplicantById } from '../../services/jobService'
+import { useToast } from '../../hooks/useToast'
+import { getAdminJobApplicantById, updateJobApplicationStatus } from '../../services/jobService'
 import type { AdminJobApplicantDetail } from '../../types/jobApplication'
 import { getErrorMessage } from '../../utils/errors'
 
@@ -91,9 +92,11 @@ function Section({ title, children }: { title: string; children: ReactNode }): J
 
 export function AdminHrApplicantDetailPage(): JSX.Element {
   const navigate = useNavigate()
+  const { showToast } = useToast()
   const { applicationId } = useParams<{ applicationId: string }>()
   const [applicant, setApplicant] = useState<AdminJobApplicantDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -154,6 +157,31 @@ export function AdminHrApplicantDetailPage(): JSX.Element {
 
   const skillTags = applicant.matched_skills?.length ? applicant.matched_skills : applicant.resume_skills ?? []
   const scoringBackPath = appRoutes.adminHrJobScoring.replace(':jobId', String(applicant.job_id))
+  const isShortlisted = ['shortlisted', 'interview'].includes(applicant.status)
+
+  const handleShortlist = async (): Promise<void> => {
+    try {
+      setIsUpdatingStatus(true)
+      const updated = await updateJobApplicationStatus(applicant.id, {
+        status: 'shortlisted',
+        screening_notes: applicant.screening_notes || 'Shortlisted by HR for interview scheduling.',
+      })
+      setApplicant(updated)
+      showToast({
+        title: 'Candidate shortlisted',
+        description: 'Candidate is now available in the interview shortlist.',
+        variant: 'success',
+      })
+    } catch (err) {
+      showToast({
+        title: 'Unable to shortlist candidate',
+        description: getErrorMessage(err, 'Please try again.'),
+        variant: 'error',
+      })
+    } finally {
+      setIsUpdatingStatus(false)
+    }
+  }
 
   return (
     <AppShell
@@ -181,6 +209,21 @@ export function AdminHrApplicantDetailPage(): JSX.Element {
             <div className="flex flex-wrap items-center gap-3">
               <Badge tone={scoreTone(applicant.match_score)}>{formatScore(applicant.match_score)}</Badge>
               <Badge tone="neutral">{formatLabel(applicant.status)}</Badge>
+              {!isShortlisted ? (
+                <Button size="sm" variant="secondary" onClick={() => void handleShortlist()} disabled={isUpdatingStatus}>
+                  <UserCheck className="mr-2 h-4 w-4" />
+                  {isUpdatingStatus ? 'Shortlisting...' : 'Shortlist'}
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => navigate(`${appRoutes.adminInterviewSchedule}?applicationId=${applicant.id}`)}
+                >
+                  <CalendarPlus className="mr-2 h-4 w-4" />
+                  Schedule
+                </Button>
+              )}
               <a
                 href={buildAssetUrl(applicant.resume_url)}
                 target="_blank"

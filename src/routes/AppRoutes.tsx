@@ -13,6 +13,11 @@ import { AdminHrJobEditPage } from '../pages/admin/AdminHrJobEditPage'
 import { AdminHrScoringPage } from '../pages/admin/AdminHrScoringPage'
 import { AdminHrApplicantDetailPage } from '../pages/admin/AdminHrApplicantDetailPage'
 import { AdminAssessmentsPage } from '../pages/admin/AdminAssessmentsPage'
+import { AdminInterviewsPage } from '../pages/admin/AdminInterviewsPage'
+import { AdminInterviewShortlistPage } from '../pages/admin/AdminInterviewShortlistPage'
+import { AdminInterviewSchedulePage } from '../pages/admin/AdminInterviewSchedulePage'
+import { AdminScheduledInterviewsPage } from '../pages/admin/AdminScheduledInterviewsPage'
+import { AdminInterviewDetailPage } from '../pages/admin/AdminInterviewDetailPage'
 import { CandidateDashboardPage } from '../pages/candidate/CandidateDashboardPage'
 import { CandidateProfilePage } from '../pages/candidate/CandidateProfilePage'
 import { CandidateCompanyJobsPage } from '../pages/candidate/CandidateCompanyJobsPage'
@@ -60,6 +65,11 @@ export function AppRoutes(): JSX.Element {
         <Route path={appRoutes.adminHrScoring} element={<AdminHrScoringPage />} />
         <Route path={appRoutes.adminHrApplicantDetail} element={<AdminHrApplicantDetailPage />} />
         <Route path={appRoutes.adminAssessments} element={<AdminAssessmentsPage />} />
+        <Route path={appRoutes.adminInterviews} element={<AdminInterviewsPage />} />
+        <Route path={appRoutes.adminInterviewShortlist} element={<AdminInterviewShortlistPage />} />
+        <Route path={appRoutes.adminInterviewSchedule} element={<AdminInterviewSchedulePage />} />
+        <Route path={appRoutes.adminInterviewScheduled} element={<AdminScheduledInterviewsPage />} />
+        <Route path={appRoutes.adminInterviewDetail} element={<AdminInterviewDetailPage />} />
         <Route path={appRoutes.adminHrJobScoring} element={<AdminHrScoringPage />} />
         <Route path={appRoutes.adminHrJobDetail} element={<AdminHrJobDetailPage />} />
         <Route path={appRoutes.adminHrJobEdit} element={<AdminHrJobEditPage />} />

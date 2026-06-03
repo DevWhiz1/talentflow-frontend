@@ -307,3 +307,20 @@ export const getAdminJobApplicantById = async (applicationId: number): Promise<A
   const { data } = await api.get<AdminJobApplicantDetail>(`/job-applications/${applicationId}`)
   return data
 }
+
+export const updateJobApplicationStatus = async (
+  applicationId: number,
+  payload: {
+    status: string
+    screening_notes?: string
+    application_rating?: number
+    interview_date?: string
+    interview_score?: number
+    interview_feedback?: string
+    rejection_reason?: string
+    offer_details?: Record<string, unknown>
+  },
+): Promise<AdminJobApplicantDetail> => {
+  const { data } = await api.put<AdminJobApplicantDetail>(`/job-applications/${applicationId}/status`, payload)
+  return data
+}
