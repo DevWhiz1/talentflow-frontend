@@ -50,13 +50,24 @@ export function AdminInterviewShortlistPage(): JSX.Element {
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase()
-    if (!query) return candidates
-    return candidates.filter((candidate) =>
+    const hiredApplicationIds = new Set(
+      interviews
+        .filter((interview) => interview.status === 'Hired' || interview.final_decision === 'Hired')
+        .map((interview) => interview.application_id)
+        .filter(Boolean),
+    )
+    const activeCandidates = candidates.filter(
+      (candidate) =>
+        !['hired', 'rejected', 'withdrawn', 'offer_declined'].includes(candidate.application_status)
+        && !hiredApplicationIds.has(candidate.application_id),
+    )
+    if (!query) return activeCandidates
+    return activeCandidates.filter((candidate) =>
       candidate.candidate_name.toLowerCase().includes(query)
       || candidate.candidate_email.toLowerCase().includes(query)
       || candidate.job_title.toLowerCase().includes(query),
     )
-  }, [candidates, search])
+  }, [candidates, interviews, search])
 
   const scheduledApplicationIds = useMemo(
     () => new Set(interviews.map((interview) => interview.application_id).filter(Boolean)),

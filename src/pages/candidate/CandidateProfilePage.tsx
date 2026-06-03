@@ -11,6 +11,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
 import { updateCandidateProfile, uploadProfileImage } from '../../services/userService'
 import type { CandidateProfileUpdatePayload } from '../../types/profile'
+import { resolveAssetUrl } from '../../utils/assetUrl'
 import { getErrorMessage } from '../../utils/errors'
 
 const candidateProfileSchema = z.object({
@@ -224,7 +225,7 @@ export function CandidateProfilePage(): JSX.Element {
             {isUploadingImage ? <p className="mt-2 text-xs text-slate-500">Uploading image...</p> : null}
             {user?.profileImage ? (
               <img
-                src={user.profileImage}
+                src={resolveAssetUrl(user.profileImage)}
                 alt="Candidate profile"
                 className="mt-4 h-24 w-24 rounded-2xl object-cover"
               />

@@ -1,15 +1,18 @@
 import type { JSX } from 'react'
 import { Bell, ChevronDown, Menu } from 'lucide-react'
+import { resolveAssetUrl } from '../../utils/assetUrl'
 
 interface TopBarProps {
   userName: string
   userEmail: string
+  avatarUrl?: string | null
   onLogout: () => void
   onMenuClick: () => void
 }
 
-export function TopBar({ userName, userEmail, onLogout, onMenuClick }: TopBarProps): JSX.Element {
+export function TopBar({ userName, userEmail, avatarUrl, onLogout, onMenuClick }: TopBarProps): JSX.Element {
   const initials = userName ? userName.charAt(0).toUpperCase() : 'U'
+  const imageUrl = resolveAssetUrl(avatarUrl)
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
@@ -36,7 +39,11 @@ export function TopBar({ userName, userEmail, onLogout, onMenuClick }: TopBarPro
           <details className="group relative">
             <summary className="flex cursor-pointer list-none items-center gap-3 rounded-full px-1 py-1 text-left hover:bg-slate-100">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-600 text-sm font-semibold text-white">
-                {initials}
+                {imageUrl ? (
+                  <img src={imageUrl} alt={`${userName} profile`} className="h-full w-full rounded-full object-cover" />
+                ) : (
+                  initials
+                )}
               </div>
               <div className="hidden text-xs sm:block">
                 <p className="text-[13px] font-semibold leading-tight text-slate-900">{userName}</p>

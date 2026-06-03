@@ -42,6 +42,9 @@ export function AppShell({ role, title, description, children }: AppShellProps):
 
   const userName = user?.name ?? 'User'
   const userEmail = user?.email ?? ''
+  const avatarUrl = user?.role === 'admin'
+    ? user.companyLogo || user.profileImage
+    : user?.profileImage || user?.companyLogo
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -57,6 +60,7 @@ export function AppShell({ role, title, description, children }: AppShellProps):
           <TopBar
             userName={userName}
             userEmail={userEmail}
+            avatarUrl={avatarUrl}
             onLogout={handleLogout}
             onMenuClick={() => setMobileSidebarOpen(true)}
           />

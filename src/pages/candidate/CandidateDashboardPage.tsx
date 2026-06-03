@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { AppShell } from '../../components/layout'
 import { DashboardCallout, JobsList, ProfileCompletionCard, StatsGrid } from '../../components/dashboard'
 import { Card } from '../../components/ui'
+import { useAuth } from '../../hooks/useAuth'
 import {
   getAppliedJobs,
   getCandidateStats,
@@ -10,15 +11,18 @@ import {
 } from '../../services/jobService'
 import { getProfileChecklist } from '../../services/userService'
 import type { AppliedJob, DashboardStat, ProfileChecklist, RecommendedJob } from '../../types/dashboard'
+import { resolveAssetUrl } from '../../utils/assetUrl'
 import { getErrorMessage } from '../../utils/errors'
 
 export function CandidateDashboardPage(): JSX.Element {
+  const { user } = useAuth()
   const [stats, setStats] = useState<DashboardStat[]>([])
   const [appliedJobs, setAppliedJobs] = useState<AppliedJob[]>([])
   const [recommendedJobs, setRecommendedJobs] = useState<RecommendedJob[]>([])
   const [profileChecklist, setProfileChecklist] = useState<ProfileChecklist | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const profileImageUrl = resolveAssetUrl(user?.profileImage)
 
   const loadDashboard = useCallback(async (): Promise<void> => {
     setIsLoading(true)
@@ -105,14 +109,31 @@ export function CandidateDashboardPage(): JSX.Element {
                 pending={profileChecklist.pending}
               />
             ) : null}
-            <Card className="p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Next step</p>
-              <h2 className="mt-2 text-xl font-semibold text-slate-900">Optimize your profile for better matches</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-600">
-                Keep your resume, portfolio, and role preferences current so the platform can surface
-                more relevant openings and faster shortlist decisions.
-              </p>
-            </Card>
+            <div className="space-y-6">
+              <Card className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-teal-600 text-xl font-semibold text-white">
+                    {profileImageUrl ? (
+                      <img src={profileImageUrl} alt={`${user?.name || 'Candidate'} profile`} className="h-full w-full object-cover" />
+                    ) : (
+                      user?.name?.charAt(0).toUpperCase() || 'U'
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-lg font-semibold text-slate-900">{user?.name || 'Candidate'}</p>
+                    <p className="truncate text-sm text-slate-500">{user?.candidateHeadline || user?.email}</p>
+                  </div>
+                </div>
+              </Card>
+              <Card className="p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">Next step</p>
+                <h2 className="mt-2 text-xl font-semibold text-slate-900">Optimize your profile for better matches</h2>
+                <p className="mt-3 text-sm leading-6 text-slate-600">
+                  Keep your resume, portfolio, and role preferences current so the platform can surface
+                  more relevant openings and faster shortlist decisions.
+                </p>
+              </Card>
+            </div>
           </section>
         </div>
       )}

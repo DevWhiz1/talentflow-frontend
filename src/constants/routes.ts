@@ -13,6 +13,15 @@ export const appRoutes = {
   adminHrJobScoring: '/admin/hr/:jobId/scoring',
   adminHrApplicantDetail: '/admin/hr/scoring/applications/:applicationId',
   adminAssessments: '/admin/assessments',
+  adminAssessmentsNew: '/admin/assessments/new',
+  adminAssessmentEdit: '/admin/assessments/:assessmentId/edit',
+  adminAssessmentAssign: '/admin/assessments/:assessmentId/assign',
+  adminOfferLetters: '/admin/offer-letters',
+  adminOfferLettersNew: '/admin/offer-letters/new',
+  adminOfferLetterDetail: '/admin/offer-letters/:offerId',
+  adminOfferLetterEdit: '/admin/offer-letters/:offerId/edit',
+  adminOnboarding: '/admin/onboarding',
+  adminOnboardingDetail: '/admin/onboarding/:onboardingId',
   adminInterviews: '/admin/interviews',
   adminInterviewShortlist: '/admin/interviews/shortlist',
   adminInterviewSchedule: '/admin/interviews/schedule',
@@ -29,6 +38,8 @@ export const appRoutes = {
   candidateJobApply: '/user/jobs/:companySlug/:jobId/apply',
   candidateAssessments: '/user/assessments',
   candidateAssessmentDetail: '/user/assessments/:inviteToken',
+  candidateOfferLetters: '/user/offer-letters',
+  candidateOnboarding: '/user/onboarding',
 } as const
 
 export const dashboardPathByRole: Record<UserRole, string> = {

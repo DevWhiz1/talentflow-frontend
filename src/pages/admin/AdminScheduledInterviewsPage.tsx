@@ -93,8 +93,14 @@ export function AdminScheduledInterviewsPage(): JSX.Element {
     await loadData(jobId || undefined)
   }
 
-  const handleCreateMeeting = async (interviewId: number): Promise<void> => {
+  const handleMeet = async (interview: Interview): Promise<void> => {
+    if (interview.meeting_link) {
+      window.open(interview.meeting_link, '_blank', 'noopener,noreferrer')
+      return
+    }
+
     try {
+      const interviewId = interview.id
       const meeting = await createInterviewMeeting(interviewId)
       setInterviews((current) =>
         current.map((interview) =>
@@ -166,7 +172,7 @@ export function AdminScheduledInterviewsPage(): JSX.Element {
                   <td className="px-3 py-3 text-slate-700">{interview.overall_score ?? '-'}</td>
                   <td className="px-3 py-3">
                     <div className="flex justify-end gap-2">
-                      <Button size="sm" variant="secondary" onClick={() => void handleCreateMeeting(interview.id)}>
+                      <Button size="sm" variant="secondary" onClick={() => void handleMeet(interview)}>
                         <LinkIcon className="mr-2 h-4 w-4" />
                         Meet
                       </Button>

@@ -1,8 +1,9 @@
 import type { JSX, ReactNode } from 'react'
-import { createContext, useState } from 'react'
+import { createContext, useEffect, useState } from 'react'
 import { dashboardPathByRole, profilePathByRole } from '../constants/routes'
 import type { AuthResponse, AuthState, LoginPayload, SignupPayload, UserRole } from '../types/auth'
 import { login as loginRequest, signup as signupRequest } from '../services/authService'
+import { getCurrentUser } from '../services/userService'
 import { clearAuthSession, readAuthSession, writeAuthSession } from '../utils/authStorage'
 
 interface AuthContextValue extends AuthState {
@@ -30,6 +31,34 @@ const getProfilePath = (role: UserRole | null | undefined): string =>
 export function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
   const [state, setState] = useState<AuthState>(initialState)
   const isHydrated = true
+
+  useEffect(() => {
+    if (!state.token) {
+      return
+    }
+
+    let cancelled = false
+    void getCurrentUser()
+      .then((freshUser) => {
+        if (cancelled) {
+          return
+        }
+
+        const nextState: AuthResponse = {
+          token: state.token as string,
+          user: freshUser,
+        }
+        setState(nextState)
+        writeAuthSession(nextState)
+      })
+      .catch(() => {
+        // Keep the stored session if profile refresh fails; API errors are handled by page-level calls.
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [state.token])
 
   const setSession = (response: AuthResponse): void => {
     setState(response)

@@ -60,6 +60,14 @@ function scoreTone(score?: number | null): 'neutral' | 'info' | 'success' | 'war
   return 'warning'
 }
 
+function isReadyForInterview(status: string): boolean {
+  return ['shortlisted', 'interview', 'assessment_passed'].includes(status.toLowerCase())
+}
+
+function isClosedApplication(status: string): boolean {
+  return ['hired', 'offered', 'accepted', 'rejected', 'withdrawn', 'offer_declined'].includes(status.toLowerCase())
+}
+
 function buildAssetUrl(value?: string | null): string {
   if (!value) {
     return '#'
@@ -157,7 +165,8 @@ export function AdminHrApplicantDetailPage(): JSX.Element {
 
   const skillTags = applicant.matched_skills?.length ? applicant.matched_skills : applicant.resume_skills ?? []
   const scoringBackPath = appRoutes.adminHrJobScoring.replace(':jobId', String(applicant.job_id))
-  const isShortlisted = ['shortlisted', 'interview'].includes(applicant.status)
+  const isShortlisted = isReadyForInterview(applicant.status)
+  const isClosed = isClosedApplication(applicant.status)
 
   const handleShortlist = async (): Promise<void> => {
     try {
@@ -209,7 +218,7 @@ export function AdminHrApplicantDetailPage(): JSX.Element {
             <div className="flex flex-wrap items-center gap-3">
               <Badge tone={scoreTone(applicant.match_score)}>{formatScore(applicant.match_score)}</Badge>
               <Badge tone="neutral">{formatLabel(applicant.status)}</Badge>
-              {!isShortlisted ? (
+              {!isShortlisted && !isClosed ? (
                 <Button size="sm" variant="secondary" onClick={() => void handleShortlist()} disabled={isUpdatingStatus}>
                   <UserCheck className="mr-2 h-4 w-4" />
                   {isUpdatingStatus ? 'Shortlisting...' : 'Shortlist'}

@@ -11,6 +11,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
 import { updateAdminProfile, uploadProfileImage } from '../../services/userService'
 import type { AdminProfileUpdatePayload } from '../../types/profile'
+import { resolveAssetUrl } from '../../utils/assetUrl'
 import { getErrorMessage } from '../../utils/errors'
 
 const adminProfileSchema = z.object({
@@ -212,9 +213,9 @@ export function AdminProfilePage(): JSX.Element {
               disabled={isUploadingImage}
             />
             {isUploadingImage ? <p className="mt-2 text-xs text-slate-500">Uploading image...</p> : null}
-            {user?.profileImage ? (
+            {user?.profileImage || user?.companyLogo ? (
               <img
-                src={user.profileImage}
+                src={resolveAssetUrl(user.companyLogo || user.profileImage)}
                 alt="Admin profile"
                 className="mt-4 h-24 w-24 rounded-2xl object-cover"
               />
