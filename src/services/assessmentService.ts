@@ -31,6 +31,7 @@ export interface Assessment {
   passing_marks?: number | null
   passing_percentage?: number | null
   time_limit_seconds?: number | null
+  due_at?: string | null
   instructions?: string | null
   questions: AssessmentQuestion[]
   show_result_to_candidate: boolean
@@ -53,6 +54,7 @@ export interface AssessmentPayload {
   passing_marks?: number | null
   passing_percentage?: number | null
   time_limit_seconds?: number | null
+  due_at?: string | null
   instructions?: string
   questions?: AssessmentQuestion[]
   show_result_to_candidate?: boolean
@@ -127,6 +129,11 @@ export interface Scorecard {
 
 export const getAssessments = async (): Promise<Assessment[]> => {
   const { data } = await api.get<Assessment[]>('/assessments/')
+  return data
+}
+
+export const getAssessment = async (assessmentId: number): Promise<Assessment> => {
+  const { data } = await api.get<Assessment>(`/assessments/${assessmentId}`)
   return data
 }
 

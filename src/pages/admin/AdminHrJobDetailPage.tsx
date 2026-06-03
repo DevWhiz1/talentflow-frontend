@@ -2,13 +2,13 @@ import type { JSX } from 'react'
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Markdown from 'react-markdown'
-import { ArrowLeft, Share2, Sparkles } from 'lucide-react'
+import { ArrowLeft, Lock, Share2, Sparkles, Unlock } from 'lucide-react'
 import { AppShell } from '../../components/layout'
 import { Badge, Card } from '../../components/ui'
 import { appRoutes } from '../../constants/routes'
 import { useToast } from '../../hooks/useToast'
 import type { AdminHrJobDetail } from '../../services/jobService'
-import { getAdminHrJobById, getAdminJobApplicants } from '../../services/jobService'
+import { getAdminHrJobById, getAdminJobApplicants, updateAdminHrJob } from '../../services/jobService'
 import type { AdminJobApplicant } from '../../types/jobApplication'
 import { getErrorMessage } from '../../utils/errors'
 import { slugify } from '../../utils/slug'
@@ -262,6 +262,28 @@ export function AdminHrJobDetailPage(): JSX.Element {
     }
   }
 
+  const handleToggleJobStatus = async (): Promise<void> => {
+    if (!job) {
+      return
+    }
+
+    const nextStatus = job.status?.toLowerCase() === 'open' ? 'closed' : 'open'
+    try {
+      const updated = await updateAdminHrJob(job.id, { status: nextStatus })
+      setJob(updated)
+      showToast({
+        title: nextStatus === 'closed' ? 'Job opening closed' : 'Job opening reopened',
+        variant: 'success',
+      })
+    } catch (err) {
+      showToast({
+        title: 'Unable to update job status',
+        description: getErrorMessage(err),
+        variant: 'error',
+      })
+    }
+  }
+
   if (isLoading) {
     return (
       <AppShell role="admin" title="Job Details" description="Loading...">
@@ -333,6 +355,15 @@ export function AdminHrJobDetailPage(): JSX.Element {
               className="rounded-lg border border-black bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
             >
               Edit Job
+            </button>
+            <button
+              onClick={() => {
+                void handleToggleJobStatus()
+              }}
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
+            >
+              {job.status?.toLowerCase() === 'open' ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
+              {job.status?.toLowerCase() === 'open' ? 'Close Opening' : 'Reopen'}
             </button>
             <Badge tone={job.status?.toLowerCase() === 'open' ? 'success' : 'neutral'}>
               {formatLabel(job.status)}

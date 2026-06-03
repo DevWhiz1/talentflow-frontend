@@ -80,7 +80,7 @@ export const mapBackendProfileUser = (user: BackendProfileUser): AuthUser => ({
   hrDesignation: user.hr_designation,
   hrDepartment: user.hr_department,
   companyDescription: user.company_description,
-  companyLogo: user.company_logo,
+  companyLogo: user.company_logo || user.profile_image,
   linkedinUrl: user.linkedin_url,
   githubUrl: user.github_url,
   portfolioUrl: user.portfolio_url,

@@ -13,6 +13,13 @@ import { AdminHrJobEditPage } from '../pages/admin/AdminHrJobEditPage'
 import { AdminHrScoringPage } from '../pages/admin/AdminHrScoringPage'
 import { AdminHrApplicantDetailPage } from '../pages/admin/AdminHrApplicantDetailPage'
 import { AdminAssessmentsPage } from '../pages/admin/AdminAssessmentsPage'
+import { AdminAssessmentFormPage } from '../pages/admin/AdminAssessmentFormPage'
+import { AdminAssessmentAssignPage } from '../pages/admin/AdminAssessmentAssignPage'
+import { AdminOfferLettersPage } from '../pages/admin/AdminOfferLettersPage'
+import { AdminOfferLetterFormPage } from '../pages/admin/AdminOfferLetterFormPage'
+import { AdminOfferLetterDetailPage } from '../pages/admin/AdminOfferLetterDetailPage'
+import { AdminOnboardingPage } from '../pages/admin/AdminOnboardingPage'
+import { AdminOnboardingDetailPage } from '../pages/admin/AdminOnboardingDetailPage'
 import { AdminInterviewsPage } from '../pages/admin/AdminInterviewsPage'
 import { AdminInterviewShortlistPage } from '../pages/admin/AdminInterviewShortlistPage'
 import { AdminInterviewSchedulePage } from '../pages/admin/AdminInterviewSchedulePage'
@@ -24,6 +31,8 @@ import { CandidateCompanyJobsPage } from '../pages/candidate/CandidateCompanyJob
 import { CandidateJobDetailPage } from '../pages/candidate/CandidateJobDetailPage'
 import { CandidateJobApplyPage } from '../pages/candidate/CandidateJobApplyPage'
 import { CandidateAssessmentsPage } from '../pages/candidate/CandidateAssessmentsPage'
+import { CandidateOfferLettersPage } from '../pages/candidate/CandidateOfferLettersPage'
+import { CandidateOnboardingPage } from '../pages/candidate/CandidateOnboardingPage'
 import { PublicCompanyJobsPage } from '../pages/public/PublicCompanyJobsPage'
 import { PublicJobDetailPage } from '../pages/public/PublicJobDetailPage'
 import { LoginPage } from '../pages/auth/LoginPage'
@@ -65,6 +74,15 @@ export function AppRoutes(): JSX.Element {
         <Route path={appRoutes.adminHrScoring} element={<AdminHrScoringPage />} />
         <Route path={appRoutes.adminHrApplicantDetail} element={<AdminHrApplicantDetailPage />} />
         <Route path={appRoutes.adminAssessments} element={<AdminAssessmentsPage />} />
+        <Route path={appRoutes.adminAssessmentsNew} element={<AdminAssessmentFormPage />} />
+        <Route path={appRoutes.adminAssessmentEdit} element={<AdminAssessmentFormPage />} />
+        <Route path={appRoutes.adminAssessmentAssign} element={<AdminAssessmentAssignPage />} />
+        <Route path={appRoutes.adminOfferLetters} element={<AdminOfferLettersPage />} />
+        <Route path={appRoutes.adminOfferLettersNew} element={<AdminOfferLetterFormPage />} />
+        <Route path={appRoutes.adminOfferLetterEdit} element={<AdminOfferLetterFormPage />} />
+        <Route path={appRoutes.adminOfferLetterDetail} element={<AdminOfferLetterDetailPage />} />
+        <Route path={appRoutes.adminOnboarding} element={<AdminOnboardingPage />} />
+        <Route path={appRoutes.adminOnboardingDetail} element={<AdminOnboardingDetailPage />} />
         <Route path={appRoutes.adminInterviews} element={<AdminInterviewsPage />} />
         <Route path={appRoutes.adminInterviewShortlist} element={<AdminInterviewShortlistPage />} />
         <Route path={appRoutes.adminInterviewSchedule} element={<AdminInterviewSchedulePage />} />
@@ -87,6 +105,8 @@ export function AppRoutes(): JSX.Element {
         <Route path={appRoutes.candidateJobApply} element={<CandidateJobApplyPage />} />
         <Route path={appRoutes.candidateAssessments} element={<CandidateAssessmentsPage />} />
         <Route path={appRoutes.candidateAssessmentDetail} element={<CandidateAssessmentsPage />} />
+        <Route path={appRoutes.candidateOfferLetters} element={<CandidateOfferLettersPage />} />
+        <Route path={appRoutes.candidateOnboarding} element={<CandidateOnboardingPage />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

@@ -19,10 +19,16 @@ import {
 } from '../../services/assessmentService'
 import { getErrorMessage } from '../../utils/errors'
 
+function parseApiDate(value?: string | null): Date | null {
+  if (!value) return null
+  const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(value)
+  const date = new Date(hasTimezone ? value : `${value}Z`)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
 function formatDate(value?: string | null): string {
-  if (!value) return '-'
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? '-' : date.toLocaleString()
+  const date = parseApiDate(value)
+  return date ? date.toLocaleString() : '-'
 }
 
 function formatSeconds(seconds: number): string {
@@ -136,7 +142,7 @@ function CandidateAssessmentDetailView({ inviteToken }: { inviteToken: string })
   const isMCQ = assessment?.assessment_type === 'mcq'
   const currentQuestion = started?.questions[activeIndex]
 
-  const endsAt = useMemo(() => (started?.ends_at ? new Date(started.ends_at).getTime() : null), [started?.ends_at])
+  const endsAt = useMemo(() => parseApiDate(started?.ends_at)?.getTime() ?? null, [started?.ends_at])
 
   const submitMCQ = useCallback(async (): Promise<void> => {
     if (!isMCQ || scorecard || isSubmitting) return
@@ -170,9 +176,8 @@ function CandidateAssessmentDetailView({ inviteToken }: { inviteToken: string })
     try {
       const response = await startMCQAssessment(inviteToken)
       setStarted(response)
-      if (response.ends_at) {
-        setRemainingSeconds(Math.max(Math.ceil((new Date(response.ends_at).getTime() - Date.now()) / 1000), 0))
-      }
+      const responseEndsAt = parseApiDate(response.ends_at)?.getTime()
+      if (responseEndsAt) setRemainingSeconds(Math.max(Math.ceil((responseEndsAt - Date.now()) / 1000), 0))
     } catch (startError) {
       showToast({ title: 'Could not start assessment', description: getErrorMessage(startError), variant: 'error' })
     }
@@ -220,10 +225,9 @@ function CandidateAssessmentDetailView({ inviteToken }: { inviteToken: string })
               </div>
               <Badge tone={tone(detail.assignment.status)}>{detail.assignment.status}</Badge>
             </div>
-            <div className="mt-5 grid gap-3 text-sm text-slate-700 sm:grid-cols-3">
+            <div className="mt-5 grid gap-3 text-sm text-slate-700 sm:grid-cols-2">
               <span className="rounded-lg bg-slate-50 p-3">Type: {assessment.assessment_type.toUpperCase()}</span>
               <span className="rounded-lg bg-slate-50 p-3">Due: {formatDate(detail.assignment.due_at)}</span>
-              <span className="rounded-lg bg-slate-50 p-3">Result: {detail.assignment.passed == null ? 'Pending' : detail.assignment.passed ? 'Pass' : 'Fail'}</span>
             </div>
           </Card>
 

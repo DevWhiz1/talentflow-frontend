@@ -46,6 +46,14 @@ function scoreTone(score?: number | null): 'neutral' | 'info' | 'success' | 'war
   return 'warning'
 }
 
+function isReadyForInterview(status: string): boolean {
+  return ['shortlisted', 'interview', 'assessment_passed'].includes(status.toLowerCase())
+}
+
+function isClosedApplication(status: string): boolean {
+  return ['hired', 'offered', 'accepted', 'rejected', 'withdrawn', 'offer_declined'].includes(status.toLowerCase())
+}
+
 export function AdminHrScoringPage(): JSX.Element {
   const navigate = useNavigate()
   const { showToast } = useToast()
@@ -275,8 +283,10 @@ export function AdminHrScoringPage(): JSX.Element {
                   </span>
                   <span className="text-sm font-medium text-slate-700">{formatLabel(applicant.status)}</span>
                   <span>
-                    {['shortlisted', 'interview'].includes(applicant.status) ? (
+                    {isReadyForInterview(applicant.status) ? (
                       <Badge tone="success">Ready</Badge>
+                    ) : isClosedApplication(applicant.status) ? (
+                      <Badge tone={applicant.status.toLowerCase() === 'hired' ? 'success' : 'neutral'}>{formatLabel(applicant.status)}</Badge>
                     ) : (
                       <Button
                         size="sm"

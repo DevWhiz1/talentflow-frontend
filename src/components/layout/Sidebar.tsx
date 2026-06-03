@@ -70,6 +70,20 @@ const adminSidebarConfig: SidebarConfig = {
       label: 'Assessments',
       icon: <ClipboardCheck className="h-4 w-4" />,
       to: appRoutes.adminAssessments,
+      children: [
+        { label: 'All Assessments', to: appRoutes.adminAssessments, icon: <Circle className="h-3 w-3 fill-current" /> },
+        { label: 'Create Assessment', to: appRoutes.adminAssessmentsNew, icon: <ClipboardCheck className="h-4 w-4" /> },
+      ],
+    },
+    {
+      label: 'Offer Letters',
+      icon: <FileText className="h-4 w-4" />,
+      to: appRoutes.adminOfferLetters,
+    },
+    {
+      label: 'Onboarding',
+      icon: <ListChecks className="h-4 w-4" />,
+      to: appRoutes.adminOnboarding,
     },
     {
       label: 'Interviews',
@@ -121,6 +135,16 @@ const candidateSidebarConfig: SidebarConfig = {
       label: 'Assessments',
       icon: <ClipboardCheck className="h-4 w-4" />,
       to: appRoutes.candidateAssessments,
+    },
+    {
+      label: 'Offer Letters',
+      icon: <FileText className="h-4 w-4" />,
+      to: appRoutes.candidateOfferLetters,
+    },
+    {
+      label: 'Onboarding',
+      icon: <ListChecks className="h-4 w-4" />,
+      to: appRoutes.candidateOnboarding,
     },
     {
       label: 'Profile',
@@ -227,6 +251,7 @@ function SidebarSection({
           ? currentPath === item.to
             || (item.to === appRoutes.adminInterviews && currentPath.startsWith(appRoutes.adminInterviews))
             || (item.to === appRoutes.adminHrScoring && currentPath.startsWith(appRoutes.adminHrScoring))
+            || (item.to === appRoutes.adminAssessments && currentPath.startsWith(appRoutes.adminAssessments))
           : false
         const isActiveChild =
           hasChildren && item.children!.some((child) => currentPath === child.to)
