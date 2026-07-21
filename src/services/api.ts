@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { readAuthToken } from '../utils/authStorage'
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL?.trim() || 'http://localhost:8000/api/v1'
+const baseUrl = import.meta.env.VITE_API_BASE_URL?.trim() || 'https://ai-recruitment-system-backend-b03gmyqti.vercel.app/'
 export const apiBaseUrl = baseUrl
 
 export const api = axios.create({
