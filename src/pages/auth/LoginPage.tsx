@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 import { AuthPageShell } from '../../components/auth/AuthPageShell'
-import { Button, Input, Select } from '../../components/ui'
+import { Button, Input } from '../../components/ui'
 import { appRoutes, dashboardPathByRole, profilePathByRole } from '../../constants/routes'
 import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
@@ -67,9 +67,10 @@ export function LoginPage(): JSX.Element {
         return
       }
 
-      const destination = response.user.profileCompleted
-        ? dashboardPathByRole[response.user.role]
-        : profilePathByRole[response.user.role]
+      const destination =
+        response.user.role === 'candidate' && !response.user.profileCompleted
+          ? profilePathByRole.candidate
+          : dashboardPathByRole[response.user.role]
       navigate(destination, { replace: true })
     } catch (error) {
       showToast({
@@ -106,10 +107,10 @@ export function LoginPage(): JSX.Element {
             error={errors.password?.message}
             {...register('password')}
           />
-          <Select label="Account type" error={errors.role?.message} {...register('role')}>
+          {/* <Select label="Account type" error={errors.role?.message} {...register('role')}>
             <option value="admin">Admin / HR</option>
             <option value="candidate">Candidate</option>
-          </Select>
+          </Select> */}
         </div>
 
         <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>

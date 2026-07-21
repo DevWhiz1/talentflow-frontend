@@ -8,11 +8,11 @@ import {
   ChevronUp,
   Circle,
   FileText,
-  HelpCircle,
-  LayoutDashboard,
+  // HelpCircle,
+  // LayoutDashboard,
   ListChecks,
   ClipboardCheck,
-  Settings,
+  // Settings,
   Users,
   X,
 } from 'lucide-react'
@@ -36,21 +36,21 @@ interface SidebarItem {
 
 interface SidebarConfig {
   primary: SidebarItem[]
-  secondary: SidebarItem[]
+  // secondary: SidebarItem[]
 }
 
 const adminSidebarConfig: SidebarConfig = {
   primary: [
-    {
-      label: 'Overview',
-      icon: <LayoutDashboard className="h-4 w-4" />,
-      to: `${appRoutes.adminDashboard}#overview`,
-    },
-    {
-      label: 'Reports',
-      icon: <FileText className="h-4 w-4" />,
-      to: `${appRoutes.adminDashboard}#reports`,
-    },
+    // {
+    //   label: 'Overview',
+    //   icon: <LayoutDashboard className="h-4 w-4" />,
+    //   to: `${appRoutes.adminDashboard}#overview`,
+    // },
+    // {
+    //   label: 'Reports',
+    //   icon: <FileText className="h-4 w-4" />,
+    //   to: `${appRoutes.adminDashboard}#reports`,
+    // },
     {
       label: 'Create Job',
       icon: <Briefcase className="h-4 w-4" />,
@@ -101,31 +101,31 @@ const adminSidebarConfig: SidebarConfig = {
       icon: <Users className="h-4 w-4" />,
       to: appRoutes.adminProfile,
     },
-    {
-      label: 'Analytics',
-      icon: <BarChart2 className="h-4 w-4" />,
-      to: appRoutes.adminAnalytics,
-    },
+    // {
+    //   label: 'Analytics',
+    //   icon: <BarChart2 className="h-4 w-4" />,
+    //   to: appRoutes.adminAnalytics,
+    // },
   ],
-  secondary: [
-    {
-      label: 'Settings',
-      icon: <Settings className="h-4 w-4" />,
-    },
-    {
-      label: 'Help',
-      icon: <HelpCircle className="h-4 w-4" />,
-    },
-  ],
+  // secondary: [
+  //   {
+  //     label: 'Settings',
+  //     icon: <Settings className="h-4 w-4" />,
+  //   },
+  //   {
+  //     label: 'Help',
+  //     icon: <HelpCircle className="h-4 w-4" />,
+  //   },
+  // ],
 }
 
 const candidateSidebarConfig: SidebarConfig = {
   primary: [
-    {
-      label: 'Overview',
-      icon: <LayoutDashboard className="h-4 w-4" />,
-      to: `${appRoutes.userDashboard}#overview`,
-    },
+    // {
+    //   label: 'Overview',
+    //   icon: <LayoutDashboard className="h-4 w-4" />,
+    //   to: `${appRoutes.userDashboard}#overview`,
+    // },
     {
       label: 'Jobs',
       icon: <FileText className="h-4 w-4" />,
@@ -151,17 +151,17 @@ const candidateSidebarConfig: SidebarConfig = {
       icon: <Users className="h-4 w-4" />,
       to: appRoutes.userProfile,
     },
-  ],
-  secondary: [
-    {
-      label: 'Settings',
-      icon: <Settings className="h-4 w-4" />,
-    },
-    {
-      label: 'Help',
-      icon: <HelpCircle className="h-4 w-4" />,
-    },
-  ],
+  ]
+  // secondary: [
+  //   {
+  //     label: 'Settings',
+  //     icon: <Settings className="h-4 w-4" />,
+  //   },
+  //   {
+  //     label: 'Help',
+  //     icon: <HelpCircle className="h-4 w-4" />,
+  //   },
+  // ],
 }
 
 function getSidebarConfig(role: UserRole): SidebarConfig {
@@ -249,6 +249,8 @@ function SidebarSection({
         const hasChildren = item.children && item.children.length > 0
         const isActiveDirect = item.to
           ? currentPath === item.to
+            || (item.to === appRoutes.adminJobsNew && (currentPath === appRoutes.adminJobsNew || currentPath.startsWith('/admin/jobs')))
+            || (item.to === appRoutes.candidateJobs && currentPath.startsWith('/user/jobs'))
             || (item.to === appRoutes.adminInterviews && currentPath.startsWith(appRoutes.adminInterviews))
             || (item.to === appRoutes.adminHrScoring && currentPath.startsWith(appRoutes.adminHrScoring))
             || (item.to === appRoutes.adminAssessments && currentPath.startsWith(appRoutes.adminAssessments))
@@ -354,7 +356,7 @@ export function Sidebar({
           <SidebarSection items={config.primary} currentPath={currentPath} collapsed={collapsed} />
 
           <div className="border-t border-slate-100 pt-4">
-            <SidebarSection items={config.secondary} currentPath={currentPath} collapsed={collapsed} />
+            {/* <SidebarSection items={config.secondary} currentPath={currentPath} collapsed={collapsed} /> */}
           </div>
         </nav>
 
@@ -444,7 +446,7 @@ export function MobileSidebar({
             <SidebarSection items={config.primary} currentPath={currentPath} collapsed={false} />
 
             <div className="border-t border-slate-100 pt-4">
-              <SidebarSection items={config.secondary} currentPath={currentPath} collapsed={false} />
+              {/* <SidebarSection items={config.secondary} currentPath={currentPath} collapsed={false} /> */}
             </div>
           </nav>
 

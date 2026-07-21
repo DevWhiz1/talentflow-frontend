@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { Bell, ChevronDown, Menu } from 'lucide-react'
+import { ChevronDown, Menu } from 'lucide-react'
 import { resolveAssetUrl } from '../../utils/assetUrl'
 
 interface TopBarProps {
@@ -27,14 +27,14 @@ export function TopBar({ userName, userEmail, avatarUrl, onLogout, onMenuClick }
         </button>
 
         <div className="flex flex-1 items-center justify-end gap-4">
-          <button
+          {/* <button
             type="button"
             className="relative inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"
             aria-label="Notifications"
           >
             <Bell className="h-4 w-4" />
             <span className="absolute right-2 top-2 inline-flex h-2 w-2 rounded-full bg-rose-500" />
-          </button>
+          </button> */}
 
           <details className="group relative">
             <summary className="flex cursor-pointer list-none items-center gap-3 rounded-full px-1 py-1 text-left hover:bg-slate-100">

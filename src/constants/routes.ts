@@ -43,8 +43,8 @@ export const appRoutes = {
 } as const
 
 export const dashboardPathByRole: Record<UserRole, string> = {
-  admin: appRoutes.adminDashboard,
-  candidate: appRoutes.userDashboard,
+  admin: appRoutes.adminJobsNew,
+  candidate: appRoutes.candidateJobs,
 }
 
 export const profilePathByRole: Record<UserRole, string> = {

@@ -189,9 +189,9 @@ export function AdminInterviewSchedulePage(): JSX.Element {
               />
             </label>
 
-            <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 md:col-span-2">
-              <input type="checkbox" checked={form.create_google_meet} onChange={(event) => updateForm('create_google_meet', event.target.checked)} className="h-4 w-4 rounded border-slate-300" />
-              <span className="text-sm font-medium text-slate-700">Create Google Meet automatically</span>
+            <label>
+              <input checked={form.create_google_meet} onChange={(event) => updateForm('create_google_meet', event.target.checked)} className="h-4 w-4 rounded border-slate-300" />
+              {/* <span className="text-sm font-medium text-slate-700">Create Google Meet automatically</span> */}
             </label>
 
             <div className="flex justify-end md:col-span-2">

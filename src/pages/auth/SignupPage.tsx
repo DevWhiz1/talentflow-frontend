@@ -95,9 +95,10 @@ export function SignupPage(): JSX.Element {
         return
       }
 
-      const destination = response.user.profileCompleted
-        ? dashboardPathByRole[response.user.role]
-        : profilePathByRole[response.user.role]
+      const destination =
+        response.user.role === 'candidate' && !response.user.profileCompleted
+          ? profilePathByRole.candidate
+          : dashboardPathByRole[response.user.role]
       navigate(destination, { replace: true })
     } catch (error) {
       showToast({

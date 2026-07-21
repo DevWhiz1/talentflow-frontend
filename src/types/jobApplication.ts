@@ -120,6 +120,7 @@ export interface AdminJobApplicant {
   last_name: string
   email: string
   current_job_title?: string | null
+  resume_url?: string | null
   status: string
   application_rating?: number | null
   applied_at: string
