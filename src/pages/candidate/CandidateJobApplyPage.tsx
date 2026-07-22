@@ -4,7 +4,7 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { z } from 'zod'
-import { ArrowLeft, FileText, Plus, Trash2, UploadCloud, Download } from 'lucide-react'
+import { ArrowLeft, FileText, Plus, Trash2, UploadCloud, Download, Loader2 } from 'lucide-react'
 import { AppShell } from '../../components/layout'
 import { Badge, Button, Card, Input, SectionHeader } from '../../components/ui'
 import { useToast } from '../../hooks/useToast'
@@ -230,7 +230,6 @@ export function CandidateJobApplyPage(): JSX.Element {
   const [resumeFileName, setResumeFileName] = useState<string | null>(null)
   const [resumeUploading, setResumeUploading] = useState(false)
   const [isAutofilling, setIsAutofilling] = useState(false)
-  const [autofillStep, setAutofillStep] = useState(0)
   const [hasApplied, setHasApplied] = useState(false)
   const [existingApplicationStatus, setExistingApplicationStatus] = useState<string>('')
 
@@ -348,9 +347,7 @@ export function CandidateJobApplyPage(): JSX.Element {
   const handleAutofillFromResume = async (file: File): Promise<void> => {
     try {
       setIsAutofilling(true)
-      setAutofillStep(1)
       const parsedData = await parseResume(file)
-      setAutofillStep(2)
 
       // Import flow should also store the resume as uploaded for submission.
       if (parsedData.resume_url) {
@@ -382,7 +379,6 @@ export function CandidateJobApplyPage(): JSX.Element {
       if (parsedData.github) setValue('githubUrl', parsedData.github.trim(), { shouldValidate: true })
       if (parsedData.portfolio) setValue('portfolioUrl', parsedData.portfolio.trim(), { shouldValidate: true })
       if (parsedData.summary) setValue('headline', parsedData.summary.trim(), { shouldValidate: true })
-      setAutofillStep(3)
 
       // Clear existing education/experience before adding new ones
       educationFields.forEach((_, index) => removeEducation(index))
@@ -421,8 +417,6 @@ export function CandidateJobApplyPage(): JSX.Element {
           })
       }
 
-      setAutofillStep(4)
-
       showToast({
         title: 'Resume imported successfully',
         description: 'Your resume information has been auto-filled. Please review and adjust as needed.',
@@ -435,7 +429,6 @@ export function CandidateJobApplyPage(): JSX.Element {
         variant: 'error',
       })
     } finally {
-      setAutofillStep(0)
       setIsAutofilling(false)
     }
   }
@@ -579,8 +572,17 @@ export function CandidateJobApplyPage(): JSX.Element {
                   }}
                   className="whitespace-nowrap"
                 >
-                  <Download className="mr-2 h-4 w-4" />
-                  {isAutofilling ? 'Importing...' : 'Import resume'}
+                  {isAutofilling ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Importing...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="mr-2 h-4 w-4" />
+                      Import resume
+                    </>
+                  )}
                 </Button>
               </div>
             </Card>
@@ -816,42 +818,11 @@ export function CandidateJobApplyPage(): JSX.Element {
       )}
 
       {isAutofilling ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4">
-          <div className="w-full max-w-xl rounded-2xl bg-white p-6 sm:p-8 shadow-2xl">
-            <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-orange-200 via-fuchsia-200 to-indigo-300">
-              <FileText className="h-10 w-10 text-indigo-700" />
-            </div>
-            <h3 className="text-center text-3xl font-semibold text-slate-800">Processing your resume</h3>
-
-            <div className="mx-auto mt-6 h-2 w-full max-w-md overflow-hidden rounded-full bg-violet-100">
-              <div
-                className="h-full rounded-full bg-violet-700 transition-all duration-300"
-                style={{ width: `${autofillStep === 1 ? 23 : autofillStep === 2 ? 48 : autofillStep === 3 ? 76 : 100}%` }}
-              />
-            </div>
-
-            <p className="mt-3 text-center text-3xl font-semibold text-violet-700">
-              {autofillStep === 1 ? '23%' : autofillStep === 2 ? '48%' : autofillStep === 3 ? '76%' : '100%'} completed
-            </p>
-
-            <ul className="mx-auto mt-8 max-w-sm space-y-4 text-lg text-slate-600">
-              <li className="flex items-center gap-3">
-                <span className={`h-3 w-3 rounded-full ${autofillStep >= 1 ? 'bg-violet-700 ring-4 ring-violet-200' : 'bg-violet-200'}`} />
-                Reading your resume
-              </li>
-              <li className="flex items-center gap-3">
-                <span className={`h-3 w-3 rounded-full ${autofillStep >= 2 ? 'bg-violet-700 ring-4 ring-violet-200' : 'bg-violet-200'}`} />
-                Filling in your contact details
-              </li>
-              <li className="flex items-center gap-3">
-                <span className={`h-3 w-3 rounded-full ${autofillStep >= 3 ? 'bg-violet-700 ring-4 ring-violet-200' : 'bg-violet-200'}`} />
-                Adding your experience and education
-              </li>
-              <li className="flex items-center gap-3">
-                <span className={`h-3 w-3 rounded-full ${autofillStep >= 4 ? 'bg-violet-700 ring-4 ring-violet-200' : 'bg-violet-200'}`} />
-                Finishing up
-              </li>
-            </ul>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs px-4">
+          <div className="flex flex-col items-center justify-center rounded-2xl bg-white p-6 shadow-xl border border-slate-100 max-w-xs w-full text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mb-3" />
+            <h3 className="text-lg font-semibold text-slate-800">Importing...</h3>
+            <p className="mt-1 text-sm text-slate-500">Auto-filling form from resume</p>
           </div>
         </div>
       ) : null}
