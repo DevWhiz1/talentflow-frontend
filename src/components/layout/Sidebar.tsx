@@ -186,32 +186,31 @@ function SidebarItemRow({
   item,
   active,
   collapsed,
-  grouped = false,
 }: {
   item: SidebarItem
   active: boolean
   collapsed: boolean
-  grouped?: boolean
 }): JSX.Element {
   const content = (
     <div
       className={classNames(
         'flex items-center rounded-2xl px-3 py-2 text-sm transition',
-        grouped && active ? 'bg-blue-50 text-blue-700' : active ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100',
+        active ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-slate-100 font-medium',
         collapsed ? 'justify-center' : 'gap-3',
       )}
     >
       <span
         className={classNames(
-          'inline-flex h-8 w-8 items-center justify-center rounded-xl',
-          grouped && active ? 'bg-blue-600 text-white' : active ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-600',
+          'inline-flex h-8 w-8 items-center justify-center rounded-xl transition',
+          active ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20' : 'bg-slate-100 text-slate-600',
         )}
       >
         {item.icon}
       </span>
-      {!collapsed && <span className="truncate font-medium">{item.label}</span>}
+      {!collapsed && <span className="truncate">{item.label}</span>}
     </div>
   )
+
 
   if (!item.to) {
     return content
@@ -265,10 +264,11 @@ function SidebarSection({
             <div key={item.label} className="rounded-2xl bg-transparent">
               <button type="button" className="block w-full" onClick={() => toggleGroup(item.label)}>
                 <div className="relative">
-                  <SidebarItemRow item={{ ...item, to: undefined }} active={active} collapsed={collapsed} grouped />
+                  <SidebarItemRow item={{ ...item, to: undefined }} active={active} collapsed={collapsed} />
                   <ChevronUp
                     className={classNames(
-                      'pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-blue-600 transition',
+                      'pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 transition',
+                      active ? 'text-blue-700' : 'text-slate-400',
                       !open && 'rotate-180',
                     )}
                   />

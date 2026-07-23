@@ -99,19 +99,20 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string
   error?: string
   helperText?: string
+  containerClassName?: string
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { label, error, helperText, className, ...props },
+  { label, error, helperText, className, containerClassName, ...props },
   ref,
 ): JSX.Element {
   return (
-    <label className="block">
+    <label className={classNames('block w-full', containerClassName)}>
       <FieldLabel required={props.required}>{label}</FieldLabel>
       <input
         ref={ref}
         className={classNames(
-          'h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10',
+          'h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-black focus:ring-2 focus:ring-black/10',
           error && 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10',
           className,
         )}
@@ -126,19 +127,20 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label: string
   error?: string
+  containerClassName?: string
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
-  { label, error, className, children, ...props },
+  { label, error, className, containerClassName, children, ...props },
   ref,
 ): JSX.Element {
   return (
-    <label className="block">
+    <label className={classNames('block w-full', containerClassName)}>
       <FieldLabel required={props.required}>{label}</FieldLabel>
       <select
         ref={ref}
         className={classNames(
-          'h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10',
+          'h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-sm outline-none transition focus:border-black focus:ring-2 focus:ring-black/10',
           error && 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10',
           className,
         )}
@@ -150,6 +152,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     </label>
   )
 })
+
 
 export interface SectionHeaderProps {
   eyebrow?: string

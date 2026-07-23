@@ -202,6 +202,27 @@ export const reviewProjectSubmission = async (
   return data
 }
 
+export interface AIAssessmentGenerateRequest {
+  job_id?: number
+  topic_or_role: string
+  assessment_type?: AssessmentType
+  num_questions?: number
+  difficulty?: 'easy' | 'medium' | 'hard' | 'mixed'
+  additional_instructions?: string
+}
+
+export interface AIAssessmentGenerateResponse {
+  title: string
+  description?: string
+  instructions?: string
+  passing_percentage: number
+  time_limit_seconds: number
+  questions: AssessmentQuestion[]
+  project_requirements?: string
+  project_deliverables?: string
+  project_submission_instructions?: string
+}
+
 export const uploadAssessmentFile = async (file: File): Promise<string> => {
   const formData = new FormData()
   formData.append('file', file)
@@ -210,3 +231,11 @@ export const uploadAssessmentFile = async (file: File): Promise<string> => {
   })
   return data.url
 }
+
+export const generateAIAssessment = async (
+  payload: AIAssessmentGenerateRequest,
+): Promise<AIAssessmentGenerateResponse> => {
+  const { data } = await api.post<AIAssessmentGenerateResponse>('/assessments/generate-ai', payload)
+  return data
+}
+
